@@ -210,8 +210,8 @@ export function CompactPanel({ reactor, reactors, onClose, onSelectReactor }: Co
             )}
           </div>
 
-          {/* Content - scrollable */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* Content - scrollable with mobile touch support */}
+          <div className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-4 touch-pan-y">
             {/* Wikipedia thumbnail */}
             {reactor.wikipediaThumbnail && (
               <div className="rounded-lg overflow-hidden bg-white/5">
