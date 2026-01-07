@@ -96,12 +96,11 @@ export function Earth({ lightingMode = "realistic", showClouds = true }: EarthPr
       cloudDriftRef.current += delta * 0.003;
       cloudsRef.current.rotation.y = earthRotationOffset + cloudDriftRef.current;
 
-      // Smooth cloud fade-in animation
+      // Quick cloud fade-in animation (~0.5 seconds)
       if (textures.clouds && cloudMaterialRef.current) {
         if (cloudOpacityRef.current < targetCloudOpacity) {
-          // Ease-out animation over ~1.5 seconds
           cloudOpacityRef.current = Math.min(
-            cloudOpacityRef.current + delta * 0.25,
+            cloudOpacityRef.current + delta * 0.7,
             targetCloudOpacity
           );
           cloudMaterialRef.current.opacity = cloudOpacityRef.current;
@@ -529,6 +528,69 @@ export function Sun() {
           opacity={0.04}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+/**
+ * Moon component with realistic texture
+ * Positioned opposite to the sun for visual balance
+ * @returns Three.js group containing moon mesh and subtle glow
+ */
+export function Moon() {
+  const moonRef = useRef<THREE.Group>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+
+  // Position moon in upper right, visible against dark space
+  // Moon is ~27% of Earth's diameter (Earth radius = 2, so moon = 0.54)
+  const moonPosition = new THREE.Vector3(18, 12, -8);
+  const moonRadius = 0.54;
+
+  // Load moon texture (4K for good detail)
+  useEffect(() => {
+    const loader = new TextureLoader();
+    loader.loadAsync("/textures/moon_bright.jpg").then((tex) => {
+      // Don't set colorSpace - let it render at full brightness
+      tex.anisotropy = 16;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      setTexture(tex);
+    }).catch((err) => {
+      console.warn("Failed to load moon texture:", err);
+    });
+  }, []);
+
+  // Very slow rotation (tidally locked feel)
+  useFrame((state, delta) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += delta * 0.005;
+    }
+  });
+
+  return (
+    <group ref={moonRef} position={[moonPosition.x, moonPosition.y, moonPosition.z]}>
+      {/* Moon surface with texture and brightness boost */}
+      <mesh ref={meshRef}>
+        <sphereGeometry args={[moonRadius, 48, 48]} />
+        <meshBasicMaterial
+          map={texture}
+          color="#ffffff"
+          toneMapped={false}
+        />
+      </mesh>
+
+      {/* Subtle rim glow */}
+      <mesh>
+        <sphereGeometry args={[moonRadius * 1.08, 32, 32]} />
+        <meshBasicMaterial
+          color="#aabbcc"
+          transparent
+          opacity={0.08}
+          side={THREE.BackSide}
+          depthWrite={false}
         />
       </mesh>
     </group>

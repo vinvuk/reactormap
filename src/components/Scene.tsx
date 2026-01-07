@@ -4,7 +4,7 @@ import React, { Suspense, useRef, useState, forwardRef, useImperativeHandle, mem
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
-import { Earth, Starfield } from "./Earth";
+import { Earth, Starfield, Moon } from "./Earth";
 import { ReactorMarkers } from "./ReactorMarkers";
 import { Reactor, LightingMode } from "@/lib/types";
 
@@ -306,6 +306,7 @@ const SceneContent = memo(function SceneContent({
       <color attach="background" args={["#020206"]} />
       <fog attach="fog" args={["#020206", 60, 120]} />
       <Starfield count={2500} />
+      <Moon />
 
       <Earth lightingMode={lightingMode} showClouds={showClouds} />
 
