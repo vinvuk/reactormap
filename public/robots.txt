@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://viewvolcano.com/sitemap.xml
+Sitemap: https://reactormap.com/sitemap.xml

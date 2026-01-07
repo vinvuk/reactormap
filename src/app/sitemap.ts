@@ -5,7 +5,7 @@ import { MetadataRoute } from "next";
  * @returns Sitemap configuration array
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://viewvolcano.com";
+  const baseUrl = "https://reactormap.com";
 
   return [
     {
