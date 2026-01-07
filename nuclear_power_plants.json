@@ -18817,7 +18817,6 @@
     "WikidataRegion": "Lufeng"
   },
   {
-    "id": "1",
     "Name": "El Dabaa-4",
     "Country": "Egypt",
     "Status": "Under Construction",
@@ -18825,10 +18824,10 @@
     "Latitude": 31.044167,
     "Longitude": 28.497778,
     "Capacity": 1200,
-    "LastUpdatedAt": "2026-01-07T14:27:38.585570"
+    "LastUpdatedAt": "2026-01-07T14:27:38.585570",
+    "Id": 821
   },
   {
-    "id": "2",
     "Name": "CHASNUPP-5",
     "Country": "Pakistan",
     "Status": "Under Construction",
@@ -18836,10 +18835,10 @@
     "Latitude": 32.391944,
     "Longitude": 71.461667,
     "Capacity": 1200,
-    "LastUpdatedAt": "2026-01-07T14:27:38.585570"
+    "LastUpdatedAt": "2026-01-07T14:27:38.585570",
+    "Id": 822
   },
   {
-    "id": "3",
     "Name": "Lianjiang-1",
     "Country": "China",
     "Status": "Under Construction",
@@ -18847,10 +18846,10 @@
     "Latitude": 21.566721,
     "Longitude": 109.815387,
     "Capacity": 1200,
-    "LastUpdatedAt": "2026-01-07T14:27:38.585570"
+    "LastUpdatedAt": "2026-01-07T14:27:38.585570",
+    "Id": 823
   },
   {
-    "id": "4",
     "Name": "Lianjiang-2",
     "Country": "China",
     "Status": "Under Construction",
@@ -18858,10 +18857,10 @@
     "Latitude": 21.566721,
     "Longitude": 109.815387,
     "Capacity": 1200,
-    "LastUpdatedAt": "2026-01-07T14:27:38.585570"
+    "LastUpdatedAt": "2026-01-07T14:27:38.585570",
+    "Id": 824
   },
   {
-    "id": "5",
     "Name": "Taipingling-3",
     "Country": "China",
     "Status": "Under Construction",
@@ -18869,10 +18868,10 @@
     "Latitude": 22.693056,
     "Longitude": 114.983333,
     "Capacity": 1200,
-    "LastUpdatedAt": "2026-01-07T14:27:38.585570"
+    "LastUpdatedAt": "2026-01-07T14:27:38.585570",
+    "Id": 825
   },
   {
-    "id": "6",
     "Name": "Zhangzhou-3",
     "Country": "China",
     "Status": "Under Construction",
@@ -18880,10 +18879,10 @@
     "Latitude": 23.829167,
     "Longitude": 117.491667,
     "Capacity": 1200,
-    "LastUpdatedAt": "2026-01-07T14:27:38.585570"
+    "LastUpdatedAt": "2026-01-07T14:27:38.585570",
+    "Id": 826
   },
   {
-    "id": "7",
     "Name": "Zhangzhou-4",
     "Country": "China",
     "Status": "Under Construction",
@@ -18891,6 +18890,7 @@
     "Latitude": 23.829167,
     "Longitude": 117.491667,
     "Capacity": 1200,
-    "LastUpdatedAt": "2026-01-07T14:27:38.585570"
+    "LastUpdatedAt": "2026-01-07T14:27:38.585570",
+    "Id": 827
   }
 ]
