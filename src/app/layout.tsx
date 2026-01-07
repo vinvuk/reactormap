@@ -75,6 +75,9 @@ export const metadata: Metadata = {
   title: "ReactorMap | Global Nuclear Power Plant Tracker",
   description: "Explore global nuclear energy infrastructure. Track nuclear reactors worldwide with stunning 3D visualization.",
   keywords: ["nuclear reactor", "nuclear power", "power plant", "energy", "3D visualization", "earth", "globe", "monitor", "IAEA"],
+  verification: {
+    google: "fPwCdYoPFuOBz_yQ_kxYIRRYDJOje-iijZRlt_88QaU",
+  },
   authors: [{ name: "ReactorMap" }],
   creator: "ReactorMap",
   publisher: "ReactorMap",
