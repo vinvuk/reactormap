@@ -68,13 +68,8 @@ export function CompactPanel({ reactor, reactors, onClose, onSelectReactor }: Co
             exit={{ y: "100%", opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="fixed left-3 right-3 bottom-20 max-h-[60vh] z-50 pointer-events-auto md:hidden"
-            style={{ touchAction: 'none' }}
           >
-            <div
-              className="h-full glass-panel rounded-2xl overflow-hidden flex flex-col"
-              style={{ touchAction: 'pan-y' }}
-              onTouchMove={(e) => e.stopPropagation()}
-            >
+            <div className="h-full glass-panel rounded-2xl overflow-hidden flex flex-col">
               {/* Drag handle for mobile */}
               <div className="flex justify-center py-2 border-b border-white/5">
                 <div className="w-12 h-1 rounded-full bg-white/30" />
@@ -217,9 +212,12 @@ export function CompactPanel({ reactor, reactors, onClose, onSelectReactor }: Co
 
           {/* Content - scrollable with mobile touch support */}
           <div
-            className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-4"
-            style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
-            onTouchMove={(e) => e.stopPropagation()}
+            className="flex-1 min-h-0 overflow-y-scroll overscroll-contain p-4 space-y-4 pb-8"
+            style={{
+              WebkitOverflowScrolling: 'touch',
+              touchAction: 'pan-y',
+              overscrollBehavior: 'contain',
+            }}
           >
             {/* Wikipedia thumbnail */}
             {reactor.wikipediaThumbnail && (
