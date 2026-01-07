@@ -20,11 +20,16 @@ interface EarthProps {
 export function Earth({ lightingMode = "realistic", showClouds = true }: EarthProps) {
   const earthRef = useRef<THREE.Mesh>(null);
   const cloudsRef = useRef<THREE.Mesh>(null);
+  const cloudMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
   const [textures, setTextures] = useState<{
     day: THREE.Texture | null;
     night: THREE.Texture | null;
     clouds: THREE.Texture | null;
   }>({ day: null, night: null, clouds: null });
+
+  // Cloud fade-in animation state
+  const cloudOpacityRef = useRef(0);
+  const targetCloudOpacity = 0.35;
 
   /**
    * Load textures in two phases for better perceived performance:
@@ -80,8 +85,21 @@ export function Earth({ lightingMode = "realistic", showClouds = true }: EarthPr
 
   useFrame((state, delta) => {
     if (cloudsRef.current) {
+      // Cloud drift rotation
       cloudDriftRef.current += delta * 0.003;
       cloudsRef.current.rotation.y = earthRotationOffset + cloudDriftRef.current;
+
+      // Smooth cloud fade-in animation
+      if (textures.clouds && cloudMaterialRef.current) {
+        if (cloudOpacityRef.current < targetCloudOpacity) {
+          // Ease-out animation over ~1.5 seconds
+          cloudOpacityRef.current = Math.min(
+            cloudOpacityRef.current + delta * 0.25,
+            targetCloudOpacity
+          );
+          cloudMaterialRef.current.opacity = cloudOpacityRef.current;
+        }
+      }
     }
   });
 
@@ -242,9 +260,10 @@ export function Earth({ lightingMode = "realistic", showClouds = true }: EarthPr
         <mesh ref={cloudsRef} rotation={[0, earthRotationOffset, 0]}>
           <sphereGeometry args={[2.015, 64, 64]} />
           <meshBasicMaterial
+            ref={cloudMaterialRef}
             map={textures.clouds}
             transparent={true}
-            opacity={0.35}
+            opacity={0}
             depthWrite={false}
             blending={THREE.AdditiveBlending}
           />
