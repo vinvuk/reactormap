@@ -31,6 +31,13 @@ export function Earth({ lightingMode = "realistic", showClouds = true }: EarthPr
   const cloudOpacityRef = useRef(0);
   const targetCloudOpacity = 0.35;
 
+  // Reset cloud opacity when toggling clouds off/on
+  useEffect(() => {
+    if (!showClouds) {
+      cloudOpacityRef.current = 0;
+    }
+  }, [showClouds]);
+
   /**
    * Load textures in two phases for better perceived performance:
    * 1. Critical textures (day/night) - loaded immediately
