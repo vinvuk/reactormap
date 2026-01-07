@@ -1,0 +1,415 @@
+@import "tailwindcss";
+
+/* ============================================
+   VOLCANIC - Dark Luxe Volcano Observatory
+   Design System
+   ============================================ */
+
+:root {
+  /* Core Palette - Dark Luxe */
+  --obsidian: #050505;
+  --void: #0a0a0a;
+  --charcoal: #111111;
+  --slate: #1a1a1a;
+  --graphite: #252525;
+
+  /* Accent - Volcanic/Lava */
+  --lava: #e85d04;
+  --lava-light: #f48c06;
+  --lava-dark: #d00000;
+  --ember: #ffba08;
+  --magma: #dc2f02;
+
+  /* Text */
+  --cream: #f5f0e8;
+  --silver: #a0a0a0;
+  --muted: #666666;
+
+  /* Functional - Volcano Status */
+  --status-normal: #4ade80;
+  --status-advisory: #fbbf24;
+  --status-watch: #f97316;
+  --status-warning: #ef4444;
+  --status-erupting: #dc2626;
+
+  /* Glow Effects */
+  --lava-glow: rgba(232, 93, 4, 0.15);
+  --lava-glow-strong: rgba(232, 93, 4, 0.3);
+  --magma-glow: rgba(220, 47, 2, 0.2);
+
+  /* Glass */
+  --glass-bg: rgba(255, 255, 255, 0.02);
+  --glass-bg-elevated: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-border-hover: rgba(232, 93, 4, 0.3);
+
+  /* Typography */
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+
+  /* Radii */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 40px var(--lava-glow);
+  --shadow-glow-strong: 0 0 60px var(--lava-glow-strong);
+}
+
+@theme inline {
+  --color-obsidian: var(--obsidian);
+  --color-void: var(--void);
+  --color-charcoal: var(--charcoal);
+  --color-slate: var(--slate);
+  --color-graphite: var(--graphite);
+  --color-lava: var(--lava);
+  --color-lava-light: var(--lava-light);
+  --color-lava-dark: var(--lava-dark);
+  --color-ember: var(--ember);
+  --color-magma: var(--magma);
+  --color-cream: var(--cream);
+  --color-silver: var(--silver);
+  --color-muted: var(--muted);
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--obsidian);
+  color: var(--cream);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--lava);
+  color: var(--obsidian);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--charcoal);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--graphite);
+  border-radius: var(--radius-full);
+  border: 2px solid var(--charcoal);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--lava-dark);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--cream) 0%, var(--lava) 50%, var(--ember) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass Morphism */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-elevated {
+  background: var(--glass-bg-elevated);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-solid {
+  background: rgba(13, 13, 13, 0.9);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.glass-panel {
+  background: linear-gradient(
+    135deg,
+    rgba(10, 10, 10, 0.92) 0%,
+    rgba(5, 5, 5, 0.88) 100%
+  );
+  backdrop-filter: blur(40px) saturate(1.2);
+  -webkit-backdrop-filter: blur(40px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.glow-lava {
+  box-shadow: var(--shadow-glow);
+}
+
+.glow-lava-strong {
+  box-shadow: var(--shadow-glow-strong);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px var(--lava-glow);
+  }
+  50% {
+    box-shadow: 0 0 40px var(--lava-glow-strong);
+  }
+}
+
+@keyframes eruption-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.7;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.animate-fade-slide-up {
+  animation: fadeSlideUp 0.8s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.animate-eruption {
+  animation: eruption-pulse 1s ease-in-out infinite;
+}
+
+/* Status Indicators - Volcano Alert Levels */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-normal {
+  background: var(--status-normal);
+  box-shadow: 0 0 8px var(--status-normal);
+}
+
+.status-advisory {
+  background: var(--status-advisory);
+  box-shadow: 0 0 8px var(--status-advisory);
+}
+
+.status-watch {
+  background: var(--status-watch);
+  box-shadow: 0 0 8px var(--status-watch);
+}
+
+.status-warning {
+  background: var(--status-warning);
+  box-shadow: 0 0 8px var(--status-warning);
+}
+
+.status-erupting {
+  background: var(--status-erupting);
+  box-shadow: 0 0 12px var(--status-erupting);
+  animation: eruption-pulse 1s ease-in-out infinite;
+}
+
+/* Data Display */
+.data-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.data-value {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--cream);
+}
+
+.data-value-large {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--lava);
+}
+
+/* Button Styles */
+.btn-primary {
+  background: linear-gradient(135deg, var(--lava-dark) 0%, var(--lava) 100%);
+  color: var(--cream);
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-lg);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: var(--font-body);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow-strong);
+}
+
+.btn-secondary {
+  background: var(--glass-bg);
+  color: var(--cream);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: var(--font-body);
+  backdrop-filter: blur(10px);
+}
+
+.btn-secondary:hover {
+  border-color: var(--lava);
+  background: var(--glass-bg-elevated);
+}
+
+.card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+  border-color: var(--glass-border-hover);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+}
+
+.canvas-container {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+.content-layer {
+  position: relative;
+  z-index: 10;
+}
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+
+@keyframes livePulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.live-indicator {
+  position: relative;
+}
+
+.live-indicator::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: livePulse 2s ease-in-out infinite;
+}
+
+.interactive-btn {
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+.interactive-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.interactive-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.glass-card-interactive {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card-interactive:hover {
+  transform: translateY(-4px);
+  border-color: rgba(232, 93, 4, 0.3);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(232, 93, 4, 0.1);
+}
