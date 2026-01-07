@@ -1,11 +1,14 @@
 "use client";
 
-import Flags from "country-flag-icons/react/3x2";
+import * as Flags from "country-flag-icons/react/3x2";
+import { FunctionComponent, SVGProps } from "react";
 
 interface CountryFlagProps {
   countryCode: string;
   className?: string;
 }
+
+type FlagComponent = FunctionComponent<SVGProps<SVGSVGElement> & { title?: string }>;
 
 /**
  * Renders a country flag SVG based on ISO 2-letter country code
@@ -15,7 +18,8 @@ interface CountryFlagProps {
  */
 export function CountryFlag({ countryCode, className = "w-5 h-4" }: CountryFlagProps) {
   // Get the flag component for this country code
-  const FlagComponent = Flags[countryCode.toUpperCase() as keyof typeof Flags];
+  const code = countryCode.toUpperCase();
+  const FlagComponent = (Flags as Record<string, FlagComponent>)[code];
 
   if (!FlagComponent) {
     // Fallback for unknown country codes
