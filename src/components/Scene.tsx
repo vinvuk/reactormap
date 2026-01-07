@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useRef, useState, forwardRef, useImperativeHandle } from "react";
+import React, { Suspense, useRef, useState, forwardRef, useImperativeHandle, memo } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
@@ -91,8 +91,9 @@ function CinematicCamera({ onAnimationComplete }: { onAnimationComplete: () => v
 /**
  * Lighting setup for nuclear reactor scene
  * Creates clean, technical lighting with cool accents
+ * Memoized to prevent unnecessary re-renders
  */
-function Lighting() {
+const Lighting = memo(function Lighting() {
   return (
     <>
       <ambientLight intensity={0.25} color="#4a4a52" />
@@ -125,7 +126,7 @@ function Lighting() {
       />
     </>
   );
-}
+});
 
 /**
  * Convert latitude/longitude to camera position looking at that point
@@ -262,7 +263,10 @@ interface SceneContentProps extends SceneProps {
   showClouds: boolean;
 }
 
-function SceneContent({
+/**
+ * Internal scene content - memoized for performance
+ */
+const SceneContent = memo(function SceneContent({
   reactors,
   selectedReactor,
   onSelectReactor,
@@ -301,7 +305,7 @@ function SceneContent({
 
       <color attach="background" args={["#020206"]} />
       <fog attach="fog" args={["#020206", 60, 120]} />
-      <Starfield count={4000} />
+      <Starfield count={2500} />
 
       <Earth lightingMode={lightingMode} showClouds={showClouds} />
 
@@ -315,7 +319,7 @@ function SceneContent({
       />
     </>
   );
-}
+});
 
 /**
  * Main 3D scene component for nuclear reactor visualization

@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Reactor, STATUS_CONFIG, ReactorStatus } from "@/lib/types";
+
+/** Debounce delay in milliseconds */
+const SEARCH_DEBOUNCE_MS = 150;
 
 interface SearchBarProps {
   reactors: Reactor[];
@@ -13,6 +16,7 @@ interface SearchBarProps {
 
 /**
  * Search bar with autocomplete for finding reactors
+ * Uses debounced search for better performance
  * @param reactors - Array of all reactors
  * @param onSelectReactor - Callback when a reactor is selected
  * @param isOpen - Whether the search bar is visible
@@ -25,9 +29,10 @@ export function SearchBar({
   onClose,
 }: SearchBarProps) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Reactor[]>([]);
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * Focus input when search opens
@@ -44,56 +49,78 @@ export function SearchBar({
   useEffect(() => {
     if (!isOpen) {
       setQuery("");
-      setResults([]);
+      setDebouncedQuery("");
       setSelectedIndex(0);
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
     }
   }, [isOpen]);
 
   /**
-   * Search reactors by name or country
+   * Debounce the search query for performance
    */
-  const handleSearch = useCallback(
-    (searchQuery: string) => {
-      setQuery(searchQuery);
+  useEffect(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, SEARCH_DEBOUNCE_MS);
 
-      if (searchQuery.length < 2) {
-        setResults([]);
-        return;
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
       }
+    };
+  }, [query]);
 
-      const lowerQuery = searchQuery.toLowerCase();
-      const filtered = reactors
-        .filter(
-          (r) =>
-            r.name.toLowerCase().includes(lowerQuery) ||
-            r.country.toLowerCase().includes(lowerQuery) ||
-            (r.reactorType && r.reactorType.toLowerCase().includes(lowerQuery))
-        )
-        .slice(0, 8);
+  /**
+   * Compute search results from debounced query
+   * Memoized for performance
+   */
+  const results = useMemo(() => {
+    if (debouncedQuery.length < 2) {
+      return [];
+    }
 
-      // Sort by status priority (operational first) then by name match quality
-      const statusOrder: Record<ReactorStatus, number> = {
-        operational: 0,
-        under_construction: 1,
-        planned: 2,
-        suspended: 3,
-        shutdown: 4,
-        cancelled: 5,
-      };
+    const lowerQuery = debouncedQuery.toLowerCase();
+    const filtered = reactors
+      .filter(
+        (r) =>
+          r.name.toLowerCase().includes(lowerQuery) ||
+          r.country.toLowerCase().includes(lowerQuery) ||
+          (r.reactorType && r.reactorType.toLowerCase().includes(lowerQuery))
+      )
+      .slice(0, 8);
 
-      filtered.sort((a, b) => {
-        const aNameMatch = a.name.toLowerCase().startsWith(lowerQuery) ? 0 : 1;
-        const bNameMatch = b.name.toLowerCase().startsWith(lowerQuery) ? 0 : 1;
+    // Sort by status priority (operational first) then by name match quality
+    const statusOrder: Record<ReactorStatus, number> = {
+      operational: 0,
+      under_construction: 1,
+      planned: 2,
+      suspended: 3,
+      shutdown: 4,
+      cancelled: 5,
+    };
 
-        if (aNameMatch !== bNameMatch) return aNameMatch - bNameMatch;
-        return statusOrder[a.status] - statusOrder[b.status];
-      });
+    filtered.sort((a, b) => {
+      const aNameMatch = a.name.toLowerCase().startsWith(lowerQuery) ? 0 : 1;
+      const bNameMatch = b.name.toLowerCase().startsWith(lowerQuery) ? 0 : 1;
 
-      setResults(filtered);
-      setSelectedIndex(0);
-    },
-    [reactors]
-  );
+      if (aNameMatch !== bNameMatch) return aNameMatch - bNameMatch;
+      return statusOrder[a.status] - statusOrder[b.status];
+    });
+
+    return filtered;
+  }, [debouncedQuery, reactors]);
+
+  /**
+   * Reset selected index when results change
+   */
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [results]);
 
   /**
    * Handle keyboard navigation
@@ -172,7 +199,7 @@ export function SearchBar({
                   ref={inputRef}
                   type="text"
                   value={query}
-                  onChange={(e) => handleSearch(e.target.value)}
+                  onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Search reactors..."
                   className="flex-1 bg-transparent text-cream placeholder:text-muted outline-none text-base"

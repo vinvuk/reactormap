@@ -363,11 +363,27 @@ export function CompactPanel({ reactor, reactors, onClose, onSelectReactor }: Co
               </div>
             </div>
 
-            {/* IAEA ID */}
+            {/* IAEA ID with link to PRIS database */}
             {reactor.iaeaId && (
               <div className="p-2 rounded-lg bg-white/5">
                 <p className="text-[10px] text-muted uppercase tracking-wide mb-1">IAEA ID</p>
-                <p className="font-mono text-xs text-cream">{reactor.iaeaId}</p>
+                <div className="flex items-center justify-between">
+                  <p className="font-mono text-xs text-cream">{reactor.iaeaId}</p>
+                  <a
+                    href={`https://pris.iaea.org/PRIS/CountryStatistics/ReactorDetails.aspx?current=${reactor.iaeaId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition-colors"
+                    title="View on IAEA PRIS"
+                  >
+                    <svg className="w-3 h-3 text-silver" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                      <path d="M2 12h20" />
+                    </svg>
+                    <span className="text-[10px] text-silver">IAEA</span>
+                  </a>
+                </div>
               </div>
             )}
           </div>

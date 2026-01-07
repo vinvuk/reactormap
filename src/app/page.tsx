@@ -39,7 +39,7 @@ export default function Home() {
  */
 function HomeContent() {
   const searchParams = useSearchParams();
-  const { reactors, isLoading } = useReactors();
+  const { reactors, isLoading, dataSourceDate } = useReactors();
   const [selectedReactor, setSelectedReactor] = useState<Reactor | null>(null);
   const [sceneLoaded, setSceneLoaded] = useState(false);
   const [visibleStatuses, setVisibleStatuses] = useState<Set<string>>(
@@ -60,7 +60,7 @@ function HomeContent() {
   const [initialUrlHandled, setInitialUrlHandled] = useState(false);
   const [lightingMode, setLightingMode] = useState<LightingMode>("realistic");
   const [showClouds, setShowClouds] = useState(true);
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const [selectedCountries, setSelectedCountries] = useState<Set<string>>(new Set());
 
   // Scene ref for camera controls
   const sceneRef = useRef<SceneControls>(null);
@@ -125,12 +125,12 @@ function HomeContent() {
   }, [updateUrl]);
 
   /**
-   * Filter reactors by selected country
+   * Filter reactors by selected countries
    */
   const filteredReactors = useMemo(() => {
-    if (!selectedCountry) return reactors;
-    return reactors.filter((r) => r.country === selectedCountry);
-  }, [reactors, selectedCountry]);
+    if (selectedCountries.size === 0) return reactors;
+    return reactors.filter((r) => selectedCountries.has(r.country));
+  }, [reactors, selectedCountries]);
 
   /**
    * Get list of operational reactors for navigation
@@ -299,10 +299,23 @@ function HomeContent() {
   }, []);
 
   /**
-   * Handle country filter selection
+   * Handle country filter toggle (add/remove from selection)
+   * @param country - Country to toggle, or null to clear all
    */
-  const handleSelectCountry = useCallback((country: string | null) => {
-    setSelectedCountry(country);
+  const handleToggleCountry = useCallback((country: string | null) => {
+    if (country === null) {
+      setSelectedCountries(new Set());
+    } else {
+      setSelectedCountries((prev) => {
+        const next = new Set(prev);
+        if (next.has(country)) {
+          next.delete(country);
+        } else {
+          next.add(country);
+        }
+        return next;
+      });
+    }
   }, []);
 
   // Keyboard shortcuts
@@ -350,8 +363,9 @@ function HomeContent() {
           visibleStatuses={visibleStatuses}
           onToggleStatus={handleToggleStatus}
           onSearch={() => setIsSearchOpen(true)}
-          selectedCountry={selectedCountry}
-          onSelectCountry={handleSelectCountry}
+          selectedCountries={selectedCountries}
+          onToggleCountry={handleToggleCountry}
+          dataSourceDate={dataSourceDate}
         />
 
         <CompactPanel

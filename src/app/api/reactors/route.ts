@@ -6,7 +6,7 @@ import path from "path";
 /**
  * Cached reactor data with timestamp
  */
-let cachedData: { reactors: Reactor[]; timestamp: number } | null = null;
+let cachedData: { reactors: Reactor[]; timestamp: number; dataSourceDate: string } | null = null;
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours (static data)
 
 /**
@@ -104,9 +104,9 @@ function parseReactor(raw: RawReactor): Reactor | null {
 
 /**
  * Load reactor data from local JSON file
- * @returns Array of reactor data
+ * @returns Object with reactors array and data source date
  */
-async function loadReactorData(): Promise<Reactor[]> {
+async function loadReactorData(): Promise<{ reactors: Reactor[]; dataSourceDate: string }> {
   try {
     console.log("Loading reactor data from JSON file...");
 
@@ -122,6 +122,14 @@ async function loadReactorData(): Promise<Reactor[]> {
       .filter((r): r is Reactor => r !== null);
 
     console.log(`${reactors.length} reactors with valid coordinates`);
+
+    // Find the most recent LastUpdatedAt date from the raw data
+    let mostRecentDate = "2024-03-03"; // Fallback date
+    for (const raw of rawData) {
+      if (raw.LastUpdatedAt && raw.LastUpdatedAt > mostRecentDate) {
+        mostRecentDate = raw.LastUpdatedAt.split("T")[0]; // Get just the date part
+      }
+    }
 
     // Sort by status priority (reversed so active reactors render LAST and appear on top)
     // In Three.js, later-rendered elements appear on top for overlapping sprites
@@ -141,10 +149,10 @@ async function loadReactorData(): Promise<Reactor[]> {
       return (a.capacity || 0) - (b.capacity || 0);
     });
 
-    return reactors;
+    return { reactors, dataSourceDate: mostRecentDate };
   } catch (error) {
     console.error("Error loading reactor data:", error);
-    return [];
+    return { reactors: [], dataSourceDate: "Unknown" };
   }
 }
 
@@ -157,20 +165,30 @@ export async function GET(): Promise<NextResponse<ReactorApiResponse>> {
     // Check cache
     const now = Date.now();
     if (cachedData && now - cachedData.timestamp < CACHE_DURATION) {
-      return NextResponse.json({
-        reactors: cachedData.reactors,
-        lastUpdated: new Date(cachedData.timestamp).toISOString(),
-        totalCount: cachedData.reactors.length,
-      });
+      return NextResponse.json(
+        {
+          reactors: cachedData.reactors,
+          lastUpdated: new Date(cachedData.timestamp).toISOString(),
+          totalCount: cachedData.reactors.length,
+          dataSourceDate: cachedData.dataSourceDate,
+        },
+        {
+          headers: {
+            "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
+            "CDN-Cache-Control": "public, max-age=86400",
+          },
+        }
+      );
     }
 
     // Load data from file
-    const reactors = await loadReactorData();
+    const { reactors, dataSourceDate } = await loadReactorData();
 
     // Update cache
     cachedData = {
       reactors,
       timestamp: now,
+      dataSourceDate,
     };
 
     // Count by status for logging
@@ -183,11 +201,20 @@ export async function GET(): Promise<NextResponse<ReactorApiResponse>> {
     );
     console.log("Reactor status counts:", statusCounts);
 
-    return NextResponse.json({
-      reactors,
-      lastUpdated: new Date(now).toISOString(),
-      totalCount: reactors.length,
-    });
+    return NextResponse.json(
+      {
+        reactors,
+        lastUpdated: new Date(now).toISOString(),
+        totalCount: reactors.length,
+        dataSourceDate,
+      },
+      {
+        headers: {
+          "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
+          "CDN-Cache-Control": "public, max-age=86400",
+        },
+      }
+    );
   } catch (error) {
     console.error("Error in reactor API:", error);
     return NextResponse.json(
@@ -195,6 +222,7 @@ export async function GET(): Promise<NextResponse<ReactorApiResponse>> {
         reactors: [],
         lastUpdated: new Date().toISOString(),
         totalCount: 0,
+        dataSourceDate: "Unknown",
       },
       { status: 500 }
     );

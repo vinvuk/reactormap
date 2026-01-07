@@ -15,13 +15,29 @@ function formatCapacity(mw: number): string {
   return `${gw.toFixed(gw >= 100 ? 0 : 1)} GW`;
 }
 
+/**
+ * Format date string to abbreviated month and year
+ * @param dateStr - Date string in YYYY-MM-DD format
+ * @returns Formatted string (e.g., "Mar 2024")
+ */
+function formatDataSourceDate(dateStr: string | null): string {
+  if (!dateStr) return "";
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  } catch {
+    return dateStr;
+  }
+}
+
 interface MinimalHeaderProps {
   reactors: Reactor[];
   visibleStatuses: Set<string>;
   onToggleStatus: (status: string) => void;
   onSearch: () => void;
-  selectedCountry: string | null;
-  onSelectCountry: (country: string | null) => void;
+  selectedCountries: Set<string>;
+  onToggleCountry: (country: string | null) => void;
+  dataSourceDate: string | null;
 }
 
 /**
@@ -32,14 +48,40 @@ export function MinimalHeader({
   visibleStatuses,
   onToggleStatus,
   onSearch,
-  selectedCountry,
-  onSelectCountry,
+  selectedCountries,
+  onToggleCountry,
+  dataSourceDate,
 }: MinimalHeaderProps) {
   const [time, setTime] = useState<string>("");
   const [timezone, setTimezone] = useState<string>("");
   const [showFilters, setShowFilters] = useState(false);
   const [countrySearch, setCountrySearch] = useState("");
   const countrySearchRef = useRef<HTMLInputElement>(null);
+  const filterContainerRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Close filter dropdown when clicking outside
+   */
+  useEffect(() => {
+    if (!showFilters) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterContainerRef.current && !filterContainerRef.current.contains(event.target as Node)) {
+        setShowFilters(false);
+        setCountrySearch("");
+      }
+    };
+
+    // Add listener with slight delay to avoid immediate trigger
+    const timeoutId = setTimeout(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showFilters]);
 
   /**
    * Calculate reactor statistics
@@ -94,17 +136,19 @@ export function MinimalHeader({
   const hasActiveFilters = useMemo(() => {
     const allStatuses: ReactorStatus[] = ["operational", "under_construction", "planned", "suspended", "shutdown", "cancelled"];
     const someStatusHidden = allStatuses.some(s => !visibleStatuses.has(s));
-    return someStatusHidden || selectedCountry !== null;
-  }, [visibleStatuses, selectedCountry]);
+    return someStatusHidden || selectedCountries.size > 0;
+  }, [visibleStatuses, selectedCountries]);
 
   /**
    * Count of active filter modifications
+   * Only counts actively selected items (countries selected + 1 if any status is hidden)
    */
   const activeFilterCount = useMemo(() => {
     const allStatuses: ReactorStatus[] = ["operational", "under_construction", "planned", "suspended", "shutdown", "cancelled"];
-    const hiddenStatusCount = allStatuses.filter(s => !visibleStatuses.has(s)).length;
-    return hiddenStatusCount + (selectedCountry ? 1 : 0);
-  }, [visibleStatuses, selectedCountry]);
+    const hasHiddenStatus = allStatuses.some(s => !visibleStatuses.has(s));
+    // Count: 1 if any status filter is active, plus number of selected countries
+    return (hasHiddenStatus ? 1 : 0) + selectedCountries.size;
+  }, [visibleStatuses, selectedCountries]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -152,6 +196,19 @@ export function MinimalHeader({
               </svg>
               <span className="font-mono text-xs sm:text-sm text-cream">{formatCapacity(stats.capacity)}</span>
             </div>
+
+            {/* Data source date */}
+            {dataSourceDate && (
+              <>
+                <div className="w-px h-3 sm:h-4 bg-white/20 hidden sm:block" aria-hidden="true" />
+                <div className="items-center gap-1 hidden sm:flex" title={`Data source: IAEA PRIS as of ${dataSourceDate}`}>
+                  <svg className="w-3 h-3 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-[10px] text-muted">{formatDataSourceDate(dataSourceDate)}</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -170,7 +227,7 @@ export function MinimalHeader({
           </button>
 
           {/* Combined Filter */}
-          <div className="relative">
+          <div className="relative" ref={filterContainerRef}>
             <button
               onClick={() => {
                 setShowFilters(!showFilters);
@@ -215,7 +272,7 @@ export function MinimalHeader({
                           statusOrder.forEach(s => {
                             if (!visibleStatuses.has(s)) onToggleStatus(s);
                           });
-                          onSelectCountry(null);
+                          onToggleCountry(null);
                         }}
                         className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
                       >
@@ -271,42 +328,73 @@ export function MinimalHeader({
                       className="w-full bg-white/5 rounded-lg px-3 py-2 text-sm text-cream placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-emerald-500/50 mb-2"
                     />
 
-                    {/* Selected country indicator */}
-                    {selectedCountry && (
-                      <button
-                        onClick={() => onSelectCountry(null)}
-                        className="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 mb-2 text-left"
-                      >
-                        <CountryFlag
-                          countryCode={countries.find(c => c.country === selectedCountry)?.countryCode || ""}
-                          className="w-4 h-3 rounded-sm flex-shrink-0"
-                        />
-                        <span className="text-xs flex-1 truncate">{selectedCountry}</span>
-                        <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
+                    {/* Selected countries chips */}
+                    {selectedCountries.size > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {Array.from(selectedCountries).map((country) => {
+                          const countryData = countries.find(c => c.country === country);
+                          return (
+                            <button
+                              key={country}
+                              onClick={() => onToggleCountry(country)}
+                              className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-left hover:bg-emerald-500/30 transition-colors"
+                            >
+                              <CountryFlag
+                                countryCode={countryData?.countryCode || ""}
+                                className="w-3.5 h-2.5 rounded-sm flex-shrink-0"
+                              />
+                              <span className="text-[11px] truncate max-w-[80px]">{country}</span>
+                              <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          );
+                        })}
+                        {selectedCountries.size > 1 && (
+                          <button
+                            onClick={() => onToggleCountry(null)}
+                            className="px-2 py-1 rounded-full bg-white/10 text-silver text-[11px] hover:bg-white/20 transition-colors"
+                          >
+                            Clear all
+                          </button>
+                        )}
+                      </div>
                     )}
 
                     {/* Country list */}
                     <div className="overflow-y-auto flex-1 -mx-1 px-1">
-                      {filteredCountries.slice(0, 50).map((c) => (
-                        <button
-                          key={c.country}
-                          onClick={() => onSelectCountry(c.country)}
-                          className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg transition-colors text-left ${
-                            selectedCountry === c.country
-                              ? "bg-emerald-500/20 text-emerald-400"
-                              : "hover:bg-white/10 text-cream"
-                          }`}
-                          role="option"
-                          aria-selected={selectedCountry === c.country}
-                        >
-                          <CountryFlag countryCode={c.countryCode} className="w-4 h-3 rounded-sm flex-shrink-0" />
-                          <span className="text-xs flex-1 truncate">{c.country}</span>
-                          <span className="text-[10px] text-muted">{c.count}</span>
-                        </button>
-                      ))}
+                      {filteredCountries.slice(0, 50).map((c) => {
+                        const isSelected = selectedCountries.has(c.country);
+                        return (
+                          <button
+                            key={c.country}
+                            onClick={() => onToggleCountry(c.country)}
+                            className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg transition-colors text-left ${
+                              isSelected
+                                ? "bg-emerald-500/20 text-emerald-400"
+                                : "hover:bg-white/10 text-cream"
+                            }`}
+                            role="checkbox"
+                            aria-checked={isSelected}
+                          >
+                            {/* Checkbox indicator */}
+                            <div className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center transition-colors ${
+                              isSelected
+                                ? "bg-emerald-500 border-emerald-500"
+                                : "border-white/30 hover:border-white/50"
+                            }`}>
+                              {isSelected && (
+                                <svg className="w-2.5 h-2.5 text-obsidian" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                            </div>
+                            <CountryFlag countryCode={c.countryCode} className="w-4 h-3 rounded-sm flex-shrink-0" />
+                            <span className="text-xs flex-1 truncate">{c.country}</span>
+                            <span className="text-[10px] text-muted">{c.count}</span>
+                          </button>
+                        );
+                      })}
                       {filteredCountries.length === 0 && (
                         <p className="text-xs text-muted text-center py-3">No countries found</p>
                       )}

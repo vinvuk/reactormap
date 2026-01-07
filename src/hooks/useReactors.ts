@@ -13,6 +13,7 @@ export function useReactors() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [dataSourceDate, setDataSourceDate] = useState<string | null>(null);
 
   /**
    * Fetch reactor data from API
@@ -32,6 +33,7 @@ export function useReactors() {
 
       setReactors(data.reactors);
       setLastUpdated(data.lastUpdated);
+      setDataSourceDate(data.dataSourceDate);
     } catch (err) {
       console.error("Error fetching reactors:", err);
       setError(err instanceof Error ? err.message : "Failed to load reactor data");
@@ -56,6 +58,7 @@ export function useReactors() {
     isLoading,
     error,
     lastUpdated,
+    dataSourceDate,
     refresh,
   };
 }

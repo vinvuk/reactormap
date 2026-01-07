@@ -107,6 +107,7 @@ export interface ReactorApiResponse {
   reactors: Reactor[];
   lastUpdated: string;
   totalCount: number;
+  dataSourceDate: string; // When the source data was last updated from IAEA
 }
 
 /**
