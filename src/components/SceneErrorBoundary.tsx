@@ -9,6 +9,21 @@ interface Props {
 interface State {
   hasError: boolean;
   error: Error | null;
+  webglSupported: boolean | null;
+}
+
+/**
+ * Check if WebGL is supported in the current browser
+ * @returns true if WebGL is available, false otherwise
+ */
+function checkWebGLSupport(): boolean {
+  try {
+    const canvas = document.createElement("canvas");
+    const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+    return gl !== null && gl !== undefined;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -19,10 +34,16 @@ interface State {
 export class SceneErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, webglSupported: null };
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  componentDidMount(): void {
+    // Check WebGL support on mount
+    const supported = checkWebGLSupport();
+    this.setState({ webglSupported: supported });
+  }
+
+  static getDerivedStateFromError(error: Error): Partial<State> {
     return { hasError: true, error };
   }
 
@@ -39,6 +60,64 @@ export class SceneErrorBoundary extends Component<Props, State> {
   };
 
   render(): ReactNode {
+    // Show WebGL not supported message
+    if (this.state.webglSupported === false) {
+      return (
+        <div className="canvas-container flex items-center justify-center bg-obsidian">
+          <div className="text-center px-6 max-w-md">
+            {/* WebGL icon */}
+            <div className="mb-6 flex justify-center">
+              <div className="w-20 h-20 rounded-full bg-amber-500/10 flex items-center justify-center">
+                <svg
+                  className="w-10 h-10 text-amber-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            <h2 className="text-xl font-display text-cream mb-3">
+              WebGL Not Supported
+            </h2>
+            <p className="text-silver/70 mb-6">
+              ReactorMap requires WebGL to display the interactive 3D globe.
+              Your browser or device doesn&apos;t support WebGL.
+            </p>
+
+            <div className="space-y-3 text-sm text-silver/60 mb-6">
+              <p>Try the following:</p>
+              <ul className="text-left space-y-2 pl-4">
+                <li>• Update your browser to the latest version</li>
+                <li>• Enable hardware acceleration in browser settings</li>
+                <li>• Update your graphics drivers</li>
+                <li>• Try a different browser (Chrome, Firefox, Edge)</li>
+              </ul>
+            </div>
+
+            <a
+              href="https://get.webgl.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 rounded-xl text-cream transition-all duration-200"
+            >
+              Check WebGL Support
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      );
+    }
+
     if (this.state.hasError) {
       return (
         <div className="canvas-container flex items-center justify-center bg-obsidian">

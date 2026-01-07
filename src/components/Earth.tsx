@@ -26,36 +26,54 @@ export function Earth({ lightingMode = "realistic", showClouds = true }: EarthPr
     clouds: THREE.Texture | null;
   }>({ day: null, night: null, clouds: null });
 
+  /**
+   * Load textures in two phases for better perceived performance:
+   * 1. Critical textures (day/night) - loaded immediately
+   * 2. Cloud texture - lazy loaded after critical textures are ready
+   */
   useEffect(() => {
     const loader = new TextureLoader();
 
-    const textureUrls = {
-      day: "/textures/earth_day_8k.jpg",
-      night: "/textures/earth_night_8k.jpg",
-      clouds: "/textures/earth_clouds_8k.jpg",
+    const configureTexture = (tex: THREE.Texture): void => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = 16;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
     };
 
+    // Phase 1: Load critical day/night textures first
     Promise.all([
-      loader.loadAsync(textureUrls.day),
-      loader.loadAsync(textureUrls.night),
-      loader.loadAsync(textureUrls.clouds),
-    ]).then(([dayTex, nightTex, cloudsTex]) => {
-      [dayTex, nightTex, cloudsTex].forEach(tex => {
-        tex.colorSpace = THREE.SRGBColorSpace;
-        tex.anisotropy = 16;
-        tex.minFilter = THREE.LinearMipmapLinearFilter;
-        tex.magFilter = THREE.LinearFilter;
-      });
+      loader.loadAsync("/textures/earth_day_8k.jpg"),
+      loader.loadAsync("/textures/earth_night_8k.jpg"),
+    ]).then(([dayTex, nightTex]) => {
+      configureTexture(dayTex);
+      configureTexture(nightTex);
 
-      setTextures({
+      setTextures(prev => ({
+        ...prev,
         day: dayTex,
         night: nightTex,
-        clouds: cloudsTex,
-      });
+      }));
+
+      // Phase 2: Lazy load cloud texture after Earth is visible
+      if (showClouds) {
+        // Small delay to prioritize Earth rendering
+        requestAnimationFrame(() => {
+          loader.loadAsync("/textures/earth_clouds_8k.jpg").then(cloudsTex => {
+            configureTexture(cloudsTex);
+            setTextures(prev => ({
+              ...prev,
+              clouds: cloudsTex,
+            }));
+          }).catch(err => {
+            console.warn("Failed to load cloud texture:", err);
+          });
+        });
+      }
     }).catch(err => {
       console.warn("Failed to load Earth textures:", err);
     });
-  }, []);
+  }, [showClouds]);
 
   const earthRotationOffset = -Math.PI / 2;
   const cloudDriftRef = useRef(0);
