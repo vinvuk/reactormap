@@ -826,6 +826,7 @@ interface DefaultMarkerProps {
 
 /**
  * Default reactor marker (original implementation)
+ * Uses uniform dot sizes - color differentiates status
  */
 function DefaultMarker({ reactor, isSelected, onClick, onHover }: DefaultMarkerProps) {
   const groupRef = useRef<THREE.Group>(null);
@@ -849,12 +850,8 @@ function DefaultMarker({ reactor, isSelected, onClick, onHover }: DefaultMarkerP
   const isUnderConstruction = reactor.status === "under_construction";
   const isActive = isOperational || isUnderConstruction;
 
-  // Capacity-based size multiplier
-  const capacityMult = getCapacityMultiplier(reactor.capacity);
-
-  // Size based on status and capacity
-  const statusSize = isOperational ? 0.035 : isUnderConstruction ? 0.028 : isSelected ? 0.024 : 0.018;
-  const baseSize = statusSize * capacityMult;
+  // Uniform dot size - only selected state changes size slightly
+  const baseSize = isSelected ? 0.028 : 0.022;
 
   useFrame((state) => {
     if (!groupRef.current) return;
@@ -869,39 +866,27 @@ function DefaultMarker({ reactor, isSelected, onClick, onHover }: DefaultMarkerP
 
     const edgeFade = Math.min(1, (dotProduct + 0.1) * 2);
 
+    // Uniform subtle pulse for all markers
     if (spriteRef.current) {
-      const pulse = isOperational
-        ? 1 + Math.sin(time * 4) * 0.2
-        : isUnderConstruction
-        ? 1 + Math.sin(time * 2) * 0.1
-        : isSelected
-        ? 1 + Math.sin(time * 2) * 0.08
-        : 1;
-
+      const pulse = isActive ? 1 + Math.sin(time * 3) * 0.1 : 1;
       const size = baseSize * pulse;
       spriteRef.current.scale.set(size, size, 1);
       (spriteRef.current.material as THREE.SpriteMaterial).opacity = 0.95 * edgeFade;
     }
 
+    // Subtle glow
     if (glowRef.current) {
-      const glowPulse = isOperational
-        ? 2.0 + Math.sin(time * 3) * 0.4
-        : isActive
-        ? 1.8 + Math.sin(time * 2) * 0.3
-        : 1.6;
-
+      const glowPulse = isActive ? 1.8 + Math.sin(time * 2) * 0.2 : 1.6;
       const glowSize = baseSize * glowPulse;
       glowRef.current.scale.set(glowSize, glowSize, 1);
-
-      const glowOpacity = isOperational ? 0.7 + Math.sin(time * 5) * 0.2 : isActive ? 0.5 : 0.4;
-      (glowRef.current.material as THREE.SpriteMaterial).opacity = glowOpacity * edgeFade;
+      (glowRef.current.material as THREE.SpriteMaterial).opacity = 0.5 * edgeFade;
     }
 
+    // Expanding ring for active reactors
     if (pulseRef.current && isActive) {
-      const phase = (time * (isOperational ? 1.0 : 0.5)) % 1;
+      const phase = (time * 0.8) % 1;
       const ringSize = baseSize * (1.2 + phase * 2);
-      const opacity = (1 - phase) * 0.5 * edgeFade;
-
+      const opacity = (1 - phase) * 0.4 * edgeFade;
       pulseRef.current.scale.set(ringSize, ringSize, 1);
       (pulseRef.current.material as THREE.SpriteMaterial).opacity = opacity;
     }
