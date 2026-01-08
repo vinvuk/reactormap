@@ -12,6 +12,7 @@ import { MiniControls } from "@/components/v3/MiniControls";
 import { InfoModal, InfoButton } from "@/components/v3/InfoModal";
 import { StatsPanel } from "@/components/v3/StatsPanel";
 import { SceneErrorBoundary } from "@/components/SceneErrorBoundary";
+import { MobileLayout } from "@/components/mobile/MobileLayout";
 import { useReactors } from "@/hooks/useReactors";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { Reactor, ReactorStatus, LightingMode } from "@/lib/types";
@@ -358,8 +359,21 @@ function HomeContent() {
         />
       </SceneErrorBoundary>
 
-      {/* UI Overlay */}
-      <div className="content-layer pointer-events-none">
+      {/* Mobile Layout - only visible on mobile */}
+      <MobileLayout
+        reactors={reactors}
+        selectedReactor={selectedReactor}
+        onSelectReactor={handleSelectReactor}
+        onMyLocation={handleMyLocation}
+        onResetView={() => sceneRef.current?.resetView()}
+        onZoomIn={() => sceneRef.current?.zoomIn()}
+        onZoomOut={() => sceneRef.current?.zoomOut()}
+        isLocating={isLocating}
+        onSearchSelect={handleSearchSelect}
+      />
+
+      {/* Desktop UI Overlay - hidden on mobile */}
+      <div className="hidden md:block content-layer pointer-events-none">
         <MinimalHeader
           reactors={reactors}
           visibleStatuses={visibleStatuses}
@@ -445,13 +459,15 @@ function HomeContent() {
         )}
       </div>
 
-      {/* Search Modal */}
-      <SearchBar
-        reactors={reactors}
-        onSelectReactor={handleSearchSelect}
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-      />
+      {/* Desktop Search Modal - hidden on mobile */}
+      <div className="hidden md:block">
+        <SearchBar
+          reactors={reactors}
+          onSelectReactor={handleSearchSelect}
+          isOpen={isSearchOpen}
+          onClose={() => setIsSearchOpen(false)}
+        />
+      </div>
 
       {/* Keyboard Shortcuts Modal */}
       <KeyboardShortcutsModal
