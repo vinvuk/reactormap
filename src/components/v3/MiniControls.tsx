@@ -14,6 +14,7 @@ interface MiniControlsProps {
   onCycleLightingMode: () => void;
   showClouds: boolean;
   onToggleClouds: () => void;
+  isPanelOpen?: boolean;
 }
 
 /**
@@ -30,6 +31,7 @@ export function MiniControls({
   onCycleLightingMode,
   showClouds,
   onToggleClouds,
+  isPanelOpen = false,
 }: MiniControlsProps) {
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
 
@@ -143,7 +145,9 @@ export function MiniControls({
 
   return (
     <nav
-      className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 pointer-events-auto"
+      className={`fixed bottom-5 left-1/2 -translate-x-1/2 z-40 pointer-events-auto transition-all duration-300 ${
+        isPanelOpen ? "opacity-0 translate-y-4 pointer-events-none md:opacity-100 md:translate-y-0 md:pointer-events-auto" : ""
+      }`}
       aria-label="Globe controls"
     >
       {/* Mobile: Compact layout with essential buttons */}

@@ -58,7 +58,7 @@ export function CompactPanel({ reactor, reactors, onClose, onSelectReactor }: Co
 
   return (
     <>
-      {/* Mobile: slides up from bottom */}
+      {/* Mobile: slides up from bottom - positioned above controls */}
       <AnimatePresence>
         {reactor && (
           <motion.div
@@ -67,11 +67,11 @@ export function CompactPanel({ reactor, reactors, onClose, onSelectReactor }: Co
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed left-3 right-3 bottom-20 max-h-[60vh] z-50 pointer-events-auto md:hidden"
+            className="fixed left-2 right-2 bottom-2 max-h-[70vh] z-50 pointer-events-auto md:hidden"
           >
             <div className="h-full glass-panel rounded-2xl overflow-hidden flex flex-col">
               {/* Drag handle for mobile */}
-              <div className="flex justify-center py-2 border-b border-white/5">
+              <div className="flex justify-center py-2 border-b border-white/5 flex-shrink-0">
                 <div className="w-12 h-1 rounded-full bg-white/30" />
               </div>
               {renderPanelContent()}
@@ -212,12 +212,7 @@ export function CompactPanel({ reactor, reactors, onClose, onSelectReactor }: Co
 
           {/* Content - scrollable with mobile touch support */}
           <div
-            className="flex-1 min-h-0 overflow-y-scroll overscroll-contain p-4 space-y-4 pb-8"
-            style={{
-              WebkitOverflowScrolling: 'touch',
-              touchAction: 'pan-y',
-              overscrollBehavior: 'contain',
-            }}
+            className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-4 pb-safe mobile-scroll-container"
           >
             {/* Wikipedia thumbnail */}
             {reactor.wikipediaThumbnail && (

@@ -429,3 +429,20 @@ body {
     0 12px 40px rgba(0, 0, 0, 0.4),
     0 0 30px rgba(232, 93, 4, 0.1);
 }
+
+/* Mobile scrollable panels */
+.mobile-scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  scroll-behavior: smooth;
+}
+
+/* Prevent body scroll when modal is open on mobile */
+@media (max-width: 768px) {
+  body.panel-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
+}

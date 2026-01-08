@@ -8,7 +8,7 @@ import { Reactor, STATUS_CONFIG } from "@/lib/types";
 /**
  * Visualization style options for reactor markers
  */
-export type VisualizationStyle = "default" | "pins" | "plumes" | "dots";
+export type VisualizationStyle = "default" | "pins" | "plumes" | "dots" | "clean";
 
 /**
  * Earth radius - must match Earth.tsx
@@ -193,6 +193,7 @@ interface PinMarkerProps {
   isSelected: boolean;
   onClick: () => void;
   onHover: (hovering: boolean, screenPos?: { x: number; y: number }) => void;
+  clusterCount?: number;
 }
 
 /**
@@ -340,6 +341,7 @@ interface PlumeMarkerProps {
   isSelected: boolean;
   onClick: () => void;
   onHover: (hovering: boolean, screenPos?: { x: number; y: number }) => void;
+  clusterCount?: number;
 }
 
 /**
@@ -527,6 +529,7 @@ interface DotMarkerProps {
   isSelected: boolean;
   onClick: () => void;
   onHover: (hovering: boolean, screenPos?: { x: number; y: number }) => void;
+  clusterCount?: number;
 }
 
 /**
@@ -681,6 +684,135 @@ function DotMarker({ reactor, isSelected, onClick, onHover }: DotMarkerProps) {
 }
 
 // ============================================================================
+// UI4: CLEAN CLUSTERED - Uniform size, no animation, with clustering
+// ============================================================================
+
+interface CleanMarkerProps {
+  reactor: Reactor;
+  isSelected: boolean;
+  onClick: () => void;
+  onHover: (hovering: boolean, screenPos?: { x: number; y: number }) => void;
+  clusterCount?: number;
+}
+
+/**
+ * UI4: Clean static marker - uniform size, no animation, color-only differentiation
+ */
+function CleanMarker({ reactor, isSelected, onClick, onHover, clusterCount = 1 }: CleanMarkerProps) {
+  const groupRef = useRef<THREE.Group>(null);
+  const dotRef = useRef<THREE.Sprite>(null);
+  const glowRef = useRef<THREE.Sprite>(null);
+  const { camera, gl } = useThree();
+
+  const DOT_SURFACE_OFFSET = 0.01;
+
+  const position = useMemo(() => {
+    const surfacePos = latLonToVector3(reactor.latitude, reactor.longitude, EARTH_RADIUS);
+    const normal = surfacePos.clone().normalize();
+    return surfacePos.add(normal.multiplyScalar(DOT_SURFACE_OFFSET));
+  }, [reactor.latitude, reactor.longitude]);
+
+  const surfaceNormal = useMemo(() => position.clone().normalize(), [position]);
+
+  const statusConfig = STATUS_CONFIG[reactor.status];
+  const color = useMemo(() => new THREE.Color(statusConfig.color), [statusConfig.color]);
+
+  // Uniform base size - only selected state changes size
+  // Cluster size scales with sqrt of count for visual balance
+  const baseSize = 0.012;
+  const clusterScale = clusterCount > 1 ? Math.sqrt(clusterCount) * 0.7 : 1;
+  const dotSize = isSelected ? baseSize * 1.5 * clusterScale : baseSize * clusterScale;
+
+  useFrame(() => {
+    if (!groupRef.current) return;
+
+    const cameraDir = camera.position.clone().normalize();
+    const dotProduct = surfaceNormal.dot(cameraDir);
+    const isVisible = dotProduct > -0.1;
+    groupRef.current.visible = isVisible;
+
+    if (!isVisible) return;
+
+    // Edge fade only - no animation
+    const edgeFade = Math.min(1, (dotProduct + 0.1) * 2);
+
+    if (dotRef.current) {
+      (dotRef.current.material as THREE.SpriteMaterial).opacity = edgeFade;
+    }
+
+    if (glowRef.current) {
+      (glowRef.current.material as THREE.SpriteMaterial).opacity = 0.4 * edgeFade;
+    }
+  });
+
+  const handlePointerOver = (event: ThreeEvent<PointerEvent>) => {
+    event.stopPropagation();
+    document.body.style.cursor = "pointer";
+    const vector = position.clone();
+    vector.project(camera);
+    const x = (vector.x * 0.5 + 0.5) * gl.domElement.clientWidth;
+    const y = (-vector.y * 0.5 + 0.5) * gl.domElement.clientHeight;
+    onHover(true, { x, y });
+  };
+
+  const handlePointerOut = () => {
+    document.body.style.cursor = "auto";
+    onHover(false);
+  };
+
+  const handleClick = (event: ThreeEvent<MouseEvent>) => {
+    event.stopPropagation();
+    onClick();
+  };
+
+  return (
+    <group ref={groupRef} position={position}>
+      {/* Click target - larger for clusters */}
+      <mesh onClick={handleClick} onPointerOver={handlePointerOver} onPointerOut={handlePointerOut}>
+        <sphereGeometry args={[0.025 * clusterScale, 8, 8]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
+
+      {/* Subtle glow - slightly larger for clusters */}
+      <sprite ref={glowRef} scale={[dotSize * 2, dotSize * 2, 1]}>
+        <spriteMaterial
+          map={getGlowTexture()}
+          color={color}
+          transparent
+          opacity={0.4}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
+      </sprite>
+
+      {/* Clean flat dot - uniform size */}
+      <sprite ref={dotRef} scale={[dotSize, dotSize, 1]}>
+        <spriteMaterial
+          map={getDotTexture()}
+          color={color}
+          transparent
+          opacity={1}
+          depthWrite={false}
+        />
+      </sprite>
+
+      {/* Selection ring */}
+      {isSelected && (
+        <sprite scale={[dotSize * 2.5, dotSize * 2.5, 1]}>
+          <spriteMaterial
+            map={getRingTexture()}
+            color={color}
+            transparent
+            opacity={0.8}
+            depthWrite={false}
+          />
+        </sprite>
+      )}
+    </group>
+  );
+}
+
+// ============================================================================
 // DEFAULT STYLE (Original implementation)
 // ============================================================================
 
@@ -689,6 +821,7 @@ interface DefaultMarkerProps {
   isSelected: boolean;
   onClick: () => void;
   onHover: (hovering: boolean, screenPos?: { x: number; y: number }) => void;
+  clusterCount?: number;
 }
 
 /**
@@ -958,18 +1091,57 @@ export function ReactorMarkers({
         return PlumeMarker;
       case "dots":
         return DotMarker;
+      case "clean":
+        return CleanMarker;
       default:
         return DefaultMarker;
     }
   }, [visualStyle]);
 
+  /**
+   * For clean style, render one marker per cluster location
+   * For other styles, render individual markers
+   */
+  const clusteredData = useMemo(() => {
+    if (visualStyle !== "clean") {
+      // Non-clustered: one marker per reactor
+      return filteredReactors.map((reactor) => ({
+        reactor,
+        clusterCount: 1,
+        isCluster: false,
+      }));
+    }
+
+    // Clustered: one marker per location
+    const result: { reactor: Reactor; clusterCount: number; isCluster: boolean }[] = [];
+    const processedLocations = new Set<string>();
+
+    for (const reactor of filteredReactors) {
+      const key = `${reactor.latitude.toFixed(3)},${reactor.longitude.toFixed(3)}`;
+      if (processedLocations.has(key)) continue;
+
+      processedLocations.add(key);
+      const cluster = locationClusters.get(key) || [reactor];
+      const bestReactor = getBestReactorAtLocation(reactor);
+
+      result.push({
+        reactor: bestReactor,
+        clusterCount: cluster.length,
+        isCluster: cluster.length > 1,
+      });
+    }
+
+    return result;
+  }, [filteredReactors, visualStyle, locationClusters, getBestReactorAtLocation]);
+
   return (
     <group>
-      {filteredReactors.map((reactor) => (
+      {clusteredData.map(({ reactor, clusterCount }) => (
         <MarkerComponent
-          key={reactor.id}
+          key={`${reactor.latitude.toFixed(3)}-${reactor.longitude.toFixed(3)}`}
           reactor={reactor}
           isSelected={selectedReactor?.id === reactor.id}
+          clusterCount={clusterCount}
           onClick={() => {
             if (selectedReactor?.id === reactor.id) {
               onSelectReactor(null);

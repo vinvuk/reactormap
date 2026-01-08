@@ -388,6 +388,7 @@ function HomeContent() {
           onCycleLightingMode={handleCycleLightingMode}
           showClouds={showClouds}
           onToggleClouds={handleToggleClouds}
+          isPanelOpen={!!selectedReactor}
         />
 
         {/* Bottom left buttons - hidden on mobile when panel is open */}

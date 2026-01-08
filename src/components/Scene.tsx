@@ -316,7 +316,7 @@ const SceneContent = memo(function SceneContent({
         onSelectReactor={onSelectReactor}
         visibleStatuses={visibleStatuses}
         onHoverReactor={onHoverReactor}
-        visualStyle="dots"
+        visualStyle="clean"
       />
     </>
   );
