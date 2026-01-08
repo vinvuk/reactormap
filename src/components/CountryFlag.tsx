@@ -17,6 +17,17 @@ type FlagComponent = FunctionComponent<SVGProps<SVGSVGElement> & { title?: strin
  * @returns Flag SVG component or null if code not found
  */
 export function CountryFlag({ countryCode, className = "w-5 h-4" }: CountryFlagProps) {
+  // Guard against undefined/null country codes
+  if (!countryCode) {
+    return (
+      <span
+        className={`inline-flex items-center justify-center bg-white/10 rounded text-[8px] text-muted ${className}`}
+      >
+        --
+      </span>
+    );
+  }
+
   // Get the flag component for this country code
   const code = countryCode.toUpperCase();
   const FlagComponent = (Flags as Record<string, FlagComponent>)[code];

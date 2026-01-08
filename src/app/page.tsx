@@ -10,6 +10,7 @@ import { MinimalHeader } from "@/components/v3/MinimalHeader";
 import { CompactPanel } from "@/components/v3/CompactPanel";
 import { MiniControls } from "@/components/v3/MiniControls";
 import { InfoModal, InfoButton } from "@/components/v3/InfoModal";
+import { StatsPanel } from "@/components/v3/StatsPanel";
 import { SceneErrorBoundary } from "@/components/SceneErrorBoundary";
 import { useReactors } from "@/hooks/useReactors";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
@@ -54,6 +55,7 @@ function HomeContent() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [infoModalTab, setInfoModalTab] = useState<"about" | "privacy" | "terms" | "credits">("about");
   const [isLocating, setIsLocating] = useState(false);
   const [operationalIndex, setOperationalIndex] = useState(0);
@@ -388,12 +390,29 @@ function HomeContent() {
           onToggleClouds={handleToggleClouds}
         />
 
-        {/* Info button - bottom left, hidden on mobile when panel is open */}
-        <div className={`fixed bottom-5 left-5 z-50 pointer-events-auto transition-opacity ${
+        {/* Bottom left buttons - hidden on mobile when panel is open */}
+        <div className={`fixed bottom-5 left-5 z-50 pointer-events-auto transition-opacity flex items-center gap-2 ${
           selectedReactor ? "opacity-0 md:opacity-100 pointer-events-none md:pointer-events-auto" : ""
         }`}>
           <InfoButton onClick={() => setIsInfoOpen(true)} />
+          {/* Stats button */}
+          <button
+            onClick={() => setIsStatsOpen(true)}
+            className="glass-panel p-3 rounded-xl hover:bg-white/10 transition-colors"
+            title="View Statistics"
+          >
+            <svg className="w-5 h-5 text-silver" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </button>
         </div>
+
+        {/* Stats Panel */}
+        <StatsPanel
+          reactors={reactors}
+          isOpen={isStatsOpen}
+          onClose={() => setIsStatsOpen(false)}
+        />
 
         {/* Info Modal */}
         <InfoModal
