@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 import { promises as fs } from "fs";
 import path from "path";
-import { createReactorSlug } from "@/lib/slugify";
+import { createReactorSlug, slugify } from "@/lib/slugify";
 
 /**
  * Raw reactor data structure from JSON
@@ -9,6 +9,7 @@ import { createReactorSlug } from "@/lib/slugify";
 interface RawReactor {
   Id: number;
   Name: string;
+  Country: string;
   Status: string;
 }
 
@@ -35,6 +36,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
+  // Get unique countries
+  const countries = [...new Set(reactors.map((r) => r.Country))];
+
+  // Country pages - high priority for aggregate content
+  const countryPages: MetadataRoute.Sitemap = countries.map((country) => ({
+    url: `${baseUrl}/country/${slugify(country)}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.9,
+  }));
+
+  // Status pages - high priority for category content
+  const statusSlugs = [
+    "operational",
+    "under-construction",
+    "planned",
+    "suspended",
+    "shutdown",
+    "cancelled",
+  ];
+  const statusPages: MetadataRoute.Sitemap = statusSlugs.map((status) => ({
+    url: `${baseUrl}/status/${status}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.9,
+  }));
+
   // Reactor pages - prioritize operational reactors
   const reactorPages: MetadataRoute.Sitemap = reactors.map((reactor) => {
     const slug = createReactorSlug(reactor.Name, String(reactor.Id));
@@ -56,5 +84,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     };
   });
 
-  return [...staticPages, ...reactorPages];
+  return [...staticPages, ...countryPages, ...statusPages, ...reactorPages];
 }
