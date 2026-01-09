@@ -126,15 +126,15 @@ export default async function DecadesPage() {
   const totalStarted = decadeStats.reduce((sum, d) => sum + d.started, 0);
 
   // Historical context for each decade
-  const decadeContext: Record<string, { title: string; icon: string }> = {
-    "1950": { title: "Dawn of commercial nuclear power", icon: "🌅" },
-    "1960": { title: "First wave of nuclear expansion", icon: "🚀" },
-    "1970": { title: "Oil crisis drives nuclear growth", icon: "⛽" },
-    "1980": { title: "Peak construction era", icon: "🏗️" },
-    "1990": { title: "Post-Chernobyl slowdown", icon: "⚠️" },
-    "2000": { title: "Nuclear renaissance begins", icon: "🔄" },
-    "2010": { title: "Post-Fukushima reassessment", icon: "🔍" },
-    "2020": { title: "Climate-driven revival", icon: "🌍" },
+  const decadeContext: Record<string, string> = {
+    "1950": "Dawn of commercial nuclear power",
+    "1960": "First wave of nuclear expansion",
+    "1970": "Oil crisis drives nuclear growth",
+    "1980": "Peak construction era",
+    "1990": "Post-Chernobyl slowdown",
+    "2000": "Nuclear renaissance begins",
+    "2010": "Post-Fukushima reassessment",
+    "2020": "Climate-driven revival",
   };
 
   // Historical events with types for styling
@@ -267,7 +267,7 @@ export default async function DecadesPage() {
               </div>
 
               {/* Bar Chart */}
-              <div className="relative">
+              <div className="relative h-64">
                 {/* Grid lines */}
                 <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
                   {[0, 1, 2, 3, 4].map((i) => (
@@ -276,69 +276,47 @@ export default async function DecadesPage() {
                 </div>
 
                 {/* Bars */}
-                <div className="relative flex items-end justify-between gap-3 md:gap-6 h-64 pt-4">
-                  {decadeStats.map((decade, index) => {
-                    const heightPercent = maxStarted > 0 ? (decade.started / maxStarted) * 100 : 0;
+                <div className="relative flex items-end justify-between gap-3 md:gap-6 h-full pb-16">
+                  {decadeStats.map((decade) => {
+                    const barHeight = maxStarted > 0 ? (decade.started / maxStarted) * 180 : 0;
                     const isPeak = decade.started === maxStarted;
 
                     return (
                       <Link
                         key={decade.decade}
                         href={`/decade/${decade.slug}`}
-                        className="flex-1 group relative"
+                        className="flex-1 group flex flex-col items-center justify-end"
                       >
-                        {/* Bar container */}
-                        <div className="flex flex-col items-center h-full justify-end">
-                          {/* Value label (shows on hover) */}
-                          <div className={`
-                            absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-1 rounded-md text-xs font-mono
-                            opacity-0 group-hover:opacity-100 transition-opacity duration-200
-                            ${isPeak ? "bg-[#22ff66] text-obsidian font-bold" : "bg-white/10 text-cream"}
-                          `}>
-                            {decade.started}
-                          </div>
-
-                          {/* The bar */}
+                        {/* The bar */}
+                        <div
+                          className={`
+                            w-full max-w-16 rounded-t-lg transition-all duration-300 relative overflow-hidden
+                            group-hover:brightness-110
+                            ${isPeak ? "shadow-[0_0_30px_rgba(34,255,102,0.4)]" : ""}
+                          `}
+                          style={{ height: `${Math.max(barHeight, 8)}px` }}
+                        >
+                          {/* Gradient fill */}
                           <div
                             className={`
-                              w-full rounded-t-lg transition-all duration-300 relative overflow-hidden
-                              group-hover:scale-105 group-hover:shadow-lg
-                              ${isPeak ? "shadow-[0_0_30px_rgba(34,255,102,0.3)]" : ""}
+                              absolute inset-0
+                              ${isPeak
+                                ? "bg-gradient-to-t from-[#22ff66] to-[#66ff99]"
+                                : "bg-gradient-to-t from-[#22ff66]/70 to-[#22ff66]/30 group-hover:from-[#22ff66]/90 group-hover:to-[#22ff66]/50"
+                              }
                             `}
-                            style={{ height: `${Math.max(heightPercent, 5)}%` }}
-                          >
-                            {/* Gradient fill */}
-                            <div
-                              className={`
-                                absolute inset-0 transition-all duration-300
-                                ${isPeak
-                                  ? "bg-gradient-to-t from-[#22ff66] via-[#22ff66] to-[#88ffaa]"
-                                  : "bg-gradient-to-t from-[#22ff66]/60 via-[#22ff66]/40 to-[#22ff66]/20 group-hover:from-[#22ff66]/80 group-hover:via-[#22ff66]/60 group-hover:to-[#22ff66]/30"
-                                }
-                              `}
-                            />
-                            {/* Shine effect */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                          </div>
-
-                          {/* Labels */}
-                          <div className="mt-4 text-center">
-                            <div className={`text-sm md:text-base font-medium transition-colors ${isPeak ? "text-[#22ff66]" : "text-silver group-hover:text-cream"}`}>
-                              {decade.decade}s
-                            </div>
-                            <div className={`text-lg md:text-xl font-mono font-bold ${isPeak ? "text-[#22ff66]" : "text-cream"}`}>
-                              {decade.started}
-                            </div>
-                          </div>
+                          />
                         </div>
 
-                        {/* Animation delay for entrance */}
-                        <style>{`
-                          @keyframes grow-${index} {
-                            from { height: 0; }
-                            to { height: ${Math.max(heightPercent, 5)}%; }
-                          }
-                        `}</style>
+                        {/* Labels */}
+                        <div className="absolute bottom-0 text-center">
+                          <div className={`text-xs md:text-sm font-medium ${isPeak ? "text-[#22ff66]" : "text-silver group-hover:text-cream"}`}>
+                            {decade.decade}s
+                          </div>
+                          <div className={`text-sm md:text-lg font-mono font-bold ${isPeak ? "text-[#22ff66]" : "text-cream"}`}>
+                            {decade.started}
+                          </div>
+                        </div>
                       </Link>
                     );
                   })}
@@ -368,9 +346,6 @@ export default async function DecadesPage() {
                     ${isPeak ? "ring-1 ring-[#22ff66]/40 bg-[#22ff66]/5" : ""}
                   `}
                 >
-                  {/* Icon */}
-                  <div className="text-3xl mb-3">{context.icon}</div>
-
                   {/* Header */}
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="text-xl font-bold group-hover:text-[#22ff66] transition-colors">
@@ -384,7 +359,7 @@ export default async function DecadesPage() {
                   </div>
 
                   {/* Description */}
-                  <p className="text-sm text-silver mb-4">{context.title}</p>
+                  <p className="text-sm text-silver mb-4">{context}</p>
 
                   {/* Stats */}
                   <div className="grid grid-cols-2 gap-3">
