@@ -15,6 +15,7 @@ import { SceneErrorBoundary } from "@/components/SceneErrorBoundary";
 import { MobileLayout } from "@/components/mobile/MobileLayout";
 import { useReactors } from "@/hooks/useReactors";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { Reactor, ReactorStatus, LightingMode } from "@/lib/types";
 import type { SceneControls } from "@/components/Scene";
 
@@ -67,6 +68,10 @@ function HomeContent() {
 
   // Scene ref for camera controls
   const sceneRef = useRef<SceneControls>(null);
+
+  // Mobile detection - force day mode on mobile to avoid city lights confusion
+  const isMobile = useIsMobile();
+  const effectiveLightingMode = isMobile ? "day" : lightingMode;
 
   /**
    * Handle initial URL parameter to select reactor on page load
@@ -354,7 +359,7 @@ function HomeContent() {
           onLoadComplete={handleSceneLoadComplete}
           isLoading={isLoading}
           onHoverReactor={handleHoverReactor}
-          lightingMode={lightingMode}
+          lightingMode={effectiveLightingMode}
           showClouds={showClouds}
         />
       </SceneErrorBoundary>
