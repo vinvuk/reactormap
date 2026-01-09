@@ -126,16 +126,27 @@ export default async function DecadesPage() {
   const totalStarted = decadeStats.reduce((sum, d) => sum + d.started, 0);
 
   // Historical context for each decade
-  const decadeContext: Record<string, string> = {
-    "1950": "Dawn of commercial nuclear power",
-    "1960": "First wave of nuclear expansion",
-    "1970": "Oil crisis drives nuclear growth",
-    "1980": "Peak construction era",
-    "1990": "Post-Chernobyl slowdown",
-    "2000": "Nuclear renaissance begins",
-    "2010": "Post-Fukushima reassessment",
-    "2020": "Climate-driven revival",
+  const decadeContext: Record<string, { title: string; icon: string }> = {
+    "1950": { title: "Dawn of commercial nuclear power", icon: "🌅" },
+    "1960": { title: "First wave of nuclear expansion", icon: "🚀" },
+    "1970": { title: "Oil crisis drives nuclear growth", icon: "⛽" },
+    "1980": { title: "Peak construction era", icon: "🏗️" },
+    "1990": { title: "Post-Chernobyl slowdown", icon: "⚠️" },
+    "2000": { title: "Nuclear renaissance begins", icon: "🔄" },
+    "2010": { title: "Post-Fukushima reassessment", icon: "🔍" },
+    "2020": { title: "Climate-driven revival", icon: "🌍" },
   };
+
+  // Historical events with types for styling
+  const historicalEvents = [
+    { year: 1954, event: "First commercial nuclear power plant", location: "Obninsk, USSR", type: "milestone" },
+    { year: 1956, event: "Calder Hall opens - first grid-connected plant", location: "UK", type: "milestone" },
+    { year: 1973, event: "Oil crisis accelerates nuclear expansion", location: "Global", type: "policy" },
+    { year: 1979, event: "Three Mile Island accident", location: "USA", type: "accident" },
+    { year: 1986, event: "Chernobyl disaster", location: "USSR", type: "accident" },
+    { year: 2011, event: "Fukushima Daiichi accident", location: "Japan", type: "accident" },
+    { year: 2020, event: "Nuclear included in net-zero plans", location: "Global", type: "policy" },
+  ];
 
   // JSON-LD structured data
   const jsonLd = {
@@ -223,124 +234,279 @@ export default async function DecadesPage() {
           </ol>
         </nav>
 
-        {/* Content */}
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          {/* Title */}
-          <div className="mb-8">
-            <h1 className="text-4xl md:text-5xl font-display font-semibold mb-4">
-              Nuclear Power Timeline
-            </h1>
-            <p className="text-lg text-silver">
-              {totalStarted} reactors commissioned across 8 decades of nuclear history
-            </p>
+        {/* Hero Section */}
+        <div className="relative overflow-hidden">
+          {/* Background glow */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-[#22ff66]/10 rounded-full blur-[100px]" />
           </div>
 
-          {/* Timeline Visualization */}
-          <div className="glass-panel rounded-xl p-6 mb-8">
-            <div className="flex items-end justify-between gap-2 h-48">
-              {decadeStats.map((decade) => {
-                const heightPercent = maxStarted > 0 ? (decade.started / maxStarted) * 100 : 0;
-                const isPeak = decade.started === maxStarted;
+          <div className="max-w-6xl mx-auto px-4 py-12 relative">
+            {/* Title */}
+            <div className="text-center mb-12">
+              <h1 className="text-4xl md:text-6xl font-display font-bold mb-4 bg-gradient-to-r from-cream via-white to-cream bg-clip-text text-transparent">
+                Nuclear Power Timeline
+              </h1>
+              <p className="text-xl text-silver">
+                <span className="text-[#22ff66] font-mono font-bold">{totalStarted}</span> reactors commissioned across{" "}
+                <span className="text-cream">8 decades</span> of nuclear history
+              </p>
+            </div>
 
-                return (
-                  <Link
-                    key={decade.decade}
-                    href={`/decade/${decade.slug}`}
-                    className="flex-1 group"
-                  >
-                    <div className="flex flex-col items-center">
-                      <div
-                        className={`w-full rounded-t transition-colors ${
-                          isPeak ? "bg-[#22ff66]" : "bg-[#22ff66]/50 group-hover:bg-[#22ff66]/70"
-                        }`}
-                        style={{ height: `${Math.max(heightPercent, 4)}%` }}
-                      />
-                      <div className="mt-2 text-center">
-                        <div className="text-xs text-silver">{decade.decade}s</div>
-                        <div className={`text-sm font-mono ${isPeak ? "text-[#22ff66] font-bold" : "text-cream"}`}>
-                          {decade.started}
+            {/* Main Timeline Visualization */}
+            <div className="glass-panel rounded-2xl p-8 mb-12">
+              {/* Chart Header */}
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-medium text-silver">Reactors Commissioned by Decade</h2>
+                <div className="flex items-center gap-4 text-xs text-muted">
+                  <span className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-[#22ff66]" />
+                    Peak Era
+                  </span>
+                </div>
+              </div>
+
+              {/* Bar Chart */}
+              <div className="relative">
+                {/* Grid lines */}
+                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <div key={i} className="border-t border-white/5 w-full" />
+                  ))}
+                </div>
+
+                {/* Bars */}
+                <div className="relative flex items-end justify-between gap-3 md:gap-6 h-64 pt-4">
+                  {decadeStats.map((decade, index) => {
+                    const heightPercent = maxStarted > 0 ? (decade.started / maxStarted) * 100 : 0;
+                    const isPeak = decade.started === maxStarted;
+
+                    return (
+                      <Link
+                        key={decade.decade}
+                        href={`/decade/${decade.slug}`}
+                        className="flex-1 group relative"
+                      >
+                        {/* Bar container */}
+                        <div className="flex flex-col items-center h-full justify-end">
+                          {/* Value label (shows on hover) */}
+                          <div className={`
+                            absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-1 rounded-md text-xs font-mono
+                            opacity-0 group-hover:opacity-100 transition-opacity duration-200
+                            ${isPeak ? "bg-[#22ff66] text-obsidian font-bold" : "bg-white/10 text-cream"}
+                          `}>
+                            {decade.started}
+                          </div>
+
+                          {/* The bar */}
+                          <div
+                            className={`
+                              w-full rounded-t-lg transition-all duration-300 relative overflow-hidden
+                              group-hover:scale-105 group-hover:shadow-lg
+                              ${isPeak ? "shadow-[0_0_30px_rgba(34,255,102,0.3)]" : ""}
+                            `}
+                            style={{ height: `${Math.max(heightPercent, 5)}%` }}
+                          >
+                            {/* Gradient fill */}
+                            <div
+                              className={`
+                                absolute inset-0 transition-all duration-300
+                                ${isPeak
+                                  ? "bg-gradient-to-t from-[#22ff66] via-[#22ff66] to-[#88ffaa]"
+                                  : "bg-gradient-to-t from-[#22ff66]/60 via-[#22ff66]/40 to-[#22ff66]/20 group-hover:from-[#22ff66]/80 group-hover:via-[#22ff66]/60 group-hover:to-[#22ff66]/30"
+                                }
+                              `}
+                            />
+                            {/* Shine effect */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+
+                          {/* Labels */}
+                          <div className="mt-4 text-center">
+                            <div className={`text-sm md:text-base font-medium transition-colors ${isPeak ? "text-[#22ff66]" : "text-silver group-hover:text-cream"}`}>
+                              {decade.decade}s
+                            </div>
+                            <div className={`text-lg md:text-xl font-mono font-bold ${isPeak ? "text-[#22ff66]" : "text-cream"}`}>
+                              {decade.started}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+
+                        {/* Animation delay for entrance */}
+                        <style>{`
+                          @keyframes grow-${index} {
+                            from { height: 0; }
+                            to { height: ${Math.max(heightPercent, 5)}%; }
+                          }
+                        `}</style>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
+        </div>
 
+        {/* Content */}
+        <div className="max-w-6xl mx-auto px-4 pb-12">
           {/* Decade Cards */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <h2 className="text-2xl font-semibold mb-6">Explore Each Decade</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
             {decadeStats.map((decade) => {
               const isPeak = decade.started === maxStarted;
+              const context = decadeContext[decade.decade];
+              const netChange = decade.started - decade.shutdown;
 
               return (
                 <Link
                   key={decade.decade}
                   href={`/decade/${decade.slug}`}
-                  className={`glass-panel rounded-xl p-4 hover:bg-white/5 transition-colors ${
-                    isPeak ? "ring-1 ring-[#22ff66]/30" : ""
-                  }`}
+                  className={`
+                    group relative glass-panel rounded-xl p-5 transition-all duration-300
+                    hover:bg-white/5 hover:scale-[1.02] hover:shadow-xl
+                    ${isPeak ? "ring-1 ring-[#22ff66]/40 bg-[#22ff66]/5" : ""}
+                  `}
                 >
+                  {/* Icon */}
+                  <div className="text-3xl mb-3">{context.icon}</div>
+
+                  {/* Header */}
                   <div className="flex items-start justify-between mb-2">
-                    <h2 className="text-xl font-semibold">The {decade.slug}</h2>
+                    <h3 className="text-xl font-bold group-hover:text-[#22ff66] transition-colors">
+                      The {decade.slug}
+                    </h3>
                     {isPeak && (
-                      <span className="px-2 py-0.5 bg-[#22ff66]/20 text-[#22ff66] text-xs rounded-full">
+                      <span className="px-2 py-0.5 bg-[#22ff66]/20 text-[#22ff66] text-xs font-medium rounded-full">
                         Peak Era
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-silver mb-3">{decadeContext[decade.decade]}</p>
-                  <div className="grid grid-cols-2 gap-2 text-center">
-                    <div>
-                      <div className="text-xl font-mono text-[#22ff66]">+{decade.started}</div>
+
+                  {/* Description */}
+                  <p className="text-sm text-silver mb-4">{context.title}</p>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white/5 rounded-lg p-3 text-center">
+                      <div className="text-2xl font-mono font-bold text-[#22ff66]">+{decade.started}</div>
                       <div className="text-xs text-silver">Started</div>
                     </div>
-                    <div>
-                      <div className="text-xl font-mono text-red-400">{decade.shutdown > 0 ? `-${decade.shutdown}` : "0"}</div>
+                    <div className="bg-white/5 rounded-lg p-3 text-center">
+                      <div className={`text-2xl font-mono font-bold ${decade.shutdown > 0 ? "text-red-400" : "text-silver"}`}>
+                        {decade.shutdown > 0 ? `-${decade.shutdown}` : "0"}
+                      </div>
                       <div className="text-xs text-silver">Shutdown</div>
                     </div>
                   </div>
+
+                  {/* Net change indicator */}
+                  <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between">
+                    <span className="text-xs text-silver">Net change</span>
+                    <span className={`text-sm font-mono font-bold ${netChange >= 0 ? "text-[#22ff66]" : "text-red-400"}`}>
+                      {netChange >= 0 ? "+" : ""}{netChange}
+                    </span>
+                  </div>
+
+                  {/* Peak year */}
                   {decade.peakYearCount > 0 && (
-                    <div className="mt-3 pt-3 border-t border-white/10 text-xs text-silver">
-                      Peak year: <span className="text-cream">{decade.peakYear}</span> ({decade.peakYearCount} reactors)
+                    <div className="mt-2 text-xs text-muted">
+                      Peak: <span className="text-silver">{decade.peakYear}</span> ({decade.peakYearCount} reactors)
                     </div>
                   )}
+
+                  {/* Arrow indicator */}
+                  <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <svg className="w-5 h-5 text-[#22ff66]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </div>
                 </Link>
               );
             })}
           </div>
 
-          {/* Historical Events */}
-          <section className="glass-panel rounded-xl p-6 mb-8">
-            <h2 className="text-xl font-semibold mb-4">Key Events in Nuclear History</h2>
-            <div className="space-y-4">
-              {[
-                { year: 1954, event: "First commercial nuclear power plant (Obninsk, USSR)" },
-                { year: 1956, event: "Calder Hall opens in UK - first grid-connected plant" },
-                { year: 1973, event: "Oil crisis accelerates nuclear expansion" },
-                { year: 1979, event: "Three Mile Island accident (USA)" },
-                { year: 1986, event: "Chernobyl disaster (USSR)" },
-                { year: 2011, event: "Fukushima Daiichi accident (Japan)" },
-                { year: 2020, event: "Nuclear included in many countries' net-zero plans" },
-              ].map(({ year, event }) => (
-                <div key={year} className="flex items-start gap-4">
-                  <span className="font-mono text-lava w-12">{year}</span>
-                  <span className="text-silver">{event}</span>
-                </div>
-              ))}
+          {/* Historical Events Timeline */}
+          <section className="glass-panel rounded-2xl p-8 mb-12">
+            <h2 className="text-2xl font-semibold mb-8">Key Events in Nuclear History</h2>
+
+            <div className="relative">
+              {/* Timeline line */}
+              <div className="absolute left-[23px] md:left-1/2 md:-translate-x-px top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#22ff66]/50 via-[#22ff66]/30 to-transparent" />
+
+              {/* Events */}
+              <div className="space-y-8">
+                {historicalEvents.map((event, index) => {
+                  const isLeft = index % 2 === 0;
+                  const typeColors = {
+                    milestone: "bg-[#22ff66] text-obsidian",
+                    accident: "bg-red-500 text-white",
+                    policy: "bg-blue-500 text-white",
+                  };
+
+                  return (
+                    <div key={event.year} className={`relative flex items-center gap-4 md:gap-8 ${isLeft ? "md:flex-row" : "md:flex-row-reverse"}`}>
+                      {/* Timeline dot */}
+                      <div className="absolute left-4 md:left-1/2 md:-translate-x-1/2 w-4 h-4 rounded-full bg-obsidian border-2 border-[#22ff66] z-10" />
+
+                      {/* Content card */}
+                      <div className={`ml-12 md:ml-0 md:w-[calc(50%-2rem)] ${isLeft ? "md:text-right md:pr-8" : "md:pl-8"}`}>
+                        <div className={`inline-block px-2 py-0.5 rounded text-xs font-medium mb-2 ${typeColors[event.type as keyof typeof typeColors]}`}>
+                          {event.type === "milestone" ? "Milestone" : event.type === "accident" ? "Incident" : "Policy"}
+                        </div>
+                        <div className="font-mono text-[#22ff66] text-lg font-bold">{event.year}</div>
+                        <div className="text-cream font-medium">{event.event}</div>
+                        <div className="text-sm text-silver">{event.location}</div>
+                      </div>
+
+                      {/* Spacer for other side */}
+                      <div className="hidden md:block md:w-[calc(50%-2rem)]" />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </section>
 
+          {/* Quick Stats Summary */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+            <div className="glass-panel rounded-xl p-4 text-center">
+              <div className="text-3xl font-mono font-bold text-[#22ff66]">{totalStarted}</div>
+              <div className="text-sm text-silver">Total Commissioned</div>
+            </div>
+            <div className="glass-panel rounded-xl p-4 text-center">
+              <div className="text-3xl font-mono font-bold text-cream">{maxStarted}</div>
+              <div className="text-sm text-silver">Peak Decade (1980s)</div>
+            </div>
+            <div className="glass-panel rounded-xl p-4 text-center">
+              <div className="text-3xl font-mono font-bold text-cream">70+</div>
+              <div className="text-sm text-silver">Years of Nuclear Power</div>
+            </div>
+            <div className="glass-panel rounded-xl p-4 text-center">
+              <div className="text-3xl font-mono font-bold text-cream">30+</div>
+              <div className="text-sm text-silver">Countries</div>
+            </div>
+          </div>
+
           {/* Related Links */}
-          <div className="flex flex-wrap gap-4">
-            <Link href="/statistics" className="px-4 py-2 glass-panel rounded-lg hover:bg-white/10 transition-colors">
-              View Statistics →
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link href="/statistics" className="px-6 py-3 glass-panel rounded-xl hover:bg-white/10 transition-all hover:scale-105 flex items-center gap-2">
+              <svg className="w-5 h-5 text-[#22ff66]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              View Statistics
             </Link>
-            <Link href="/countries" className="px-4 py-2 glass-panel rounded-lg hover:bg-white/10 transition-colors">
-              Browse by Country →
+            <Link href="/countries" className="px-6 py-3 glass-panel rounded-xl hover:bg-white/10 transition-all hover:scale-105 flex items-center gap-2">
+              <svg className="w-5 h-5 text-[#22ff66]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Browse by Country
             </Link>
-            <Link href="/types" className="px-4 py-2 glass-panel rounded-lg hover:bg-white/10 transition-colors">
-              Browse by Reactor Type →
+            <Link href="/types" className="px-6 py-3 glass-panel rounded-xl hover:bg-white/10 transition-all hover:scale-105 flex items-center gap-2">
+              <svg className="w-5 h-5 text-[#22ff66]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+              </svg>
+              Reactor Types
             </Link>
           </div>
 
