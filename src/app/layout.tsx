@@ -13,7 +13,7 @@ const jsonLd = {
   "@type": "WebApplication",
   name: "ReactorMap",
   description:
-    "Explore global nuclear energy infrastructure. Track 800+ nuclear reactors worldwide with stunning 3D visualization.",
+    "Interactive 3D map of 811 nuclear reactors worldwide. Real IAEA data showing operational, planned, and shutdown plants.",
   url: "https://reactormap.com",
   applicationCategory: "EducationalApplication",
   operatingSystem: "Any",
@@ -73,7 +73,7 @@ const jetBrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "ReactorMap | Global Nuclear Power Plant Tracker",
-  description: "Explore global nuclear energy infrastructure. Track nuclear reactors worldwide with stunning 3D visualization.",
+  description: "Interactive 3D map of 811 nuclear reactors worldwide. Real IAEA data showing operational, planned, and shutdown plants. Explore global nuclear power infrastructure.",
   keywords: ["nuclear reactor", "nuclear power", "power plant", "energy", "3D visualization", "earth", "globe", "monitor", "IAEA"],
   verification: {
     google: "fPwCdYoPFuOBz_yQ_kxYIRRYDJOje-iijZRlt_88QaU",
@@ -82,13 +82,16 @@ export const metadata: Metadata = {
   creator: "ReactorMap",
   publisher: "ReactorMap",
   icons: {
-    icon: "/favicon.svg?v=2",
-    apple: "/apple-touch-icon.png?v=2",
-    shortcut: "/favicon.svg?v=2",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.png", type: "image/png", sizes: "192x192" },
+    ],
+    apple: "/apple-touch-icon.png",
+    shortcut: "/favicon.png",
   },
   openGraph: {
     title: "ReactorMap | Global Nuclear Power Plant Tracker",
-    description: "Explore global nuclear energy infrastructure. Track 800+ nuclear reactors on an interactive 3D globe.",
+    description: "Interactive 3D map of 811 nuclear reactors worldwide. Real IAEA data showing operational, planned, and shutdown plants.",
     type: "website",
     url: "https://reactormap.com",
     siteName: "ReactorMap",
@@ -97,7 +100,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "ReactorMap | Global Nuclear Power Plant Tracker",
-    description: "Explore global nuclear energy infrastructure. Track 800+ nuclear reactors on an interactive 3D globe.",
+    description: "Interactive 3D map of 811 nuclear reactors worldwide. Real IAEA data showing operational, planned, and shutdown plants.",
   },
   metadataBase: new URL("https://reactormap.com"),
   alternates: {
