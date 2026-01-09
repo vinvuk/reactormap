@@ -1,6 +1,30 @@
-# https://www.robotstxt.org/robotstxt.html
+# ReactorMap Robots.txt
+# https://reactormap.com
+
+# Allow all crawlers
 User-agent: *
 Allow: /
 
-# Sitemap
+# Block Next.js internal paths
+Disallow: /_next/
+Disallow: /api/
+
+# Block static assets that don't need indexing
+Disallow: /*.json$
+Disallow: /*.xml$
+
+# Crawl delay for politeness (optional, not all bots honor this)
+Crawl-delay: 1
+
+# Sitemaps
 Sitemap: https://reactormap.com/sitemap.xml
+
+# Google-specific settings
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Bing-specific settings
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1

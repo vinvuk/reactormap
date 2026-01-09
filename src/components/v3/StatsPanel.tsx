@@ -2,8 +2,10 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import { Reactor, STATUS_CONFIG, ReactorStatus } from "@/lib/types";
 import { CountryFlag } from "@/components/CountryFlag";
+import { slugify } from "@/lib/slugify";
 
 interface StatsPanelProps {
   reactors: Reactor[];
@@ -445,56 +447,65 @@ function CountriesTab({ stats }: { stats: ReturnType<typeof Object> }) {
           const percentage = (value / maxValue) * 100;
 
           return (
-            <motion.div
+            <Link
               key={country.country}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.03 }}
-              className="group p-2 rounded-lg transition-colors hover:bg-white/5"
+              href={`/country/${slugify(country.country)}`}
             >
-              <div className="flex items-center gap-3">
-                {/* Rank */}
-                <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium text-muted bg-white/5">
-                  {index + 1}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.03 }}
+                className="group p-2 rounded-lg transition-colors hover:bg-white/5 cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  {/* Rank */}
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium text-muted bg-white/5">
+                    {index + 1}
+                  </div>
+
+                  {/* Flag */}
+                  <CountryFlag
+                    countryCode={country.countryCode}
+                    className="w-6 h-4 rounded-sm shadow-sm flex-shrink-0"
+                  />
+
+                  {/* Country name */}
+                  <span className="text-sm text-cream flex-1 truncate font-medium group-hover:text-emerald-400 transition-colors">
+                    {country.country}
+                  </span>
+
+                  {/* Stats */}
+                  <div className="text-right">
+                    <span className="text-sm font-semibold text-cream font-mono">
+                      {sortBy === "capacity"
+                        ? `${(country.capacity / 1000).toFixed(1)}`
+                        : country.count}
+                    </span>
+                    <span className="text-xs text-muted ml-1">
+                      {sortBy === "capacity" ? "GW" : "reactors"}
+                    </span>
+                  </div>
+
+                  {/* Arrow icon */}
+                  <svg className="w-4 h-4 text-silver opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
 
-                {/* Flag */}
-                <CountryFlag
-                  countryCode={country.countryCode}
-                  className="w-6 h-4 rounded-sm shadow-sm flex-shrink-0"
-                />
-
-                {/* Country name */}
-                <span className="text-sm text-cream flex-1 truncate font-medium">
-                  {country.country}
-                </span>
-
-                {/* Stats */}
-                <div className="text-right">
-                  <span className="text-sm font-semibold text-cream font-mono">
-                    {sortBy === "capacity"
-                      ? `${(country.capacity / 1000).toFixed(1)}`
-                      : country.count}
-                  </span>
-                  <span className="text-xs text-muted ml-1">
-                    {sortBy === "capacity" ? "GW" : "reactors"}
-                  </span>
+                {/* Progress bar */}
+                <div className="mt-2 ml-9 h-2 bg-white/5 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${percentage}%` }}
+                    transition={{ duration: 0.6, delay: index * 0.03 + 0.2, ease: "easeOut" }}
+                    className="h-full rounded-full"
+                    style={{
+                      background: "linear-gradient(90deg, rgba(34, 255, 102, 0.3) 0%, rgba(34, 255, 102, 0.7) 100%)",
+                    }}
+                  />
                 </div>
-              </div>
-
-              {/* Progress bar */}
-              <div className="mt-2 ml-9 h-2 bg-white/5 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${percentage}%` }}
-                  transition={{ duration: 0.6, delay: index * 0.03 + 0.2, ease: "easeOut" }}
-                  className="h-full rounded-full"
-                  style={{
-                    background: "linear-gradient(90deg, rgba(34, 255, 102, 0.3) 0%, rgba(34, 255, 102, 0.7) 100%)",
-                  }}
-                />
-              </div>
-            </motion.div>
+              </motion.div>
+            </Link>
           );
         })}
       </div>
@@ -514,6 +525,19 @@ function CountriesTab({ stats }: { stats: ReturnType<typeof Object> }) {
             <p className="text-xs text-silver">Combined from top 15 nations</p>
           </div>
         </div>
+      </div>
+
+      {/* View all link */}
+      <div className="mt-4 text-center">
+        <Link
+          href="/countries"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+        >
+          View all countries
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+        </Link>
       </div>
     </div>
   );

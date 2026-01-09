@@ -43,6 +43,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
+      url: `${baseUrl}/faq`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/statistics`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
+    },
+    {
       url: `${baseUrl}/countries`,
       lastModified: new Date(),
       changeFrequency: "weekly" as const,
@@ -72,7 +84,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.95,
     },
+    {
+      url: `${baseUrl}/decades`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.9,
+    },
   ];
+
+  // Decade pages
+  const decadeSlugs = ["1950s", "1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "2020s"];
+  const decadePages: MetadataRoute.Sitemap = decadeSlugs.map((decade) => ({
+    url: `${baseUrl}/decade/${decade}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.85,
+  }));
 
   // Get unique countries
   const countries = [...new Set(reactors.map((r) => r.Country))];
@@ -167,6 +194,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticPages,
+    ...decadePages,
     ...countryPages,
     ...statusPages,
     ...typePages,

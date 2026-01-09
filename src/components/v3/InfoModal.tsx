@@ -166,6 +166,36 @@ function AboutContent() {
           power plants compiled from IAEA and World Nuclear Association records.
         </p>
       </div>
+
+      <div className="pt-2">
+        <h3 className="text-cream font-medium mb-2">Explore</h3>
+        <div className="flex flex-wrap gap-2">
+          <a href="/countries" className="px-3 py-1.5 text-xs bg-white/5 hover:bg-white/10 rounded-lg text-silver hover:text-cream transition-colors">
+            Browse Countries
+          </a>
+          <a href="/types" className="px-3 py-1.5 text-xs bg-white/5 hover:bg-white/10 rounded-lg text-silver hover:text-cream transition-colors">
+            Reactor Types
+          </a>
+          <a href="/statuses" className="px-3 py-1.5 text-xs bg-white/5 hover:bg-white/10 rounded-lg text-silver hover:text-cream transition-colors">
+            By Status
+          </a>
+          <a href="/regions" className="px-3 py-1.5 text-xs bg-white/5 hover:bg-white/10 rounded-lg text-silver hover:text-cream transition-colors">
+            By Region
+          </a>
+          <a href="/operators" className="px-3 py-1.5 text-xs bg-white/5 hover:bg-white/10 rounded-lg text-silver hover:text-cream transition-colors">
+            Operators
+          </a>
+          <a href="/statistics" className="px-3 py-1.5 text-xs bg-white/5 hover:bg-white/10 rounded-lg text-silver hover:text-cream transition-colors">
+            Statistics
+          </a>
+          <a href="/faq" className="px-3 py-1.5 text-xs bg-white/5 hover:bg-white/10 rounded-lg text-silver hover:text-cream transition-colors">
+            FAQ
+          </a>
+          <a href="/about" className="px-3 py-1.5 text-xs bg-white/5 hover:bg-white/10 rounded-lg text-silver hover:text-cream transition-colors">
+            About
+          </a>
+        </div>
+      </div>
     </div>
   );
 }
