@@ -248,8 +248,8 @@ export default async function DecadesPage() {
                 Nuclear Power Timeline
               </h1>
               <p className="text-xl text-silver">
-                <span className="text-[#22ff66] font-mono font-bold">{totalStarted}</span> reactors commissioned across{" "}
-                <span className="text-cream">8 decades</span> of nuclear history
+                <span className="text-[#22ff66] font-mono font-bold">{totalStarted}</span> reactors started operations across{" "}
+                <span className="text-cream">70+ years</span> of nuclear history
               </p>
             </div>
 
