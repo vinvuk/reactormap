@@ -159,11 +159,11 @@ export function Earth({ lightingMode = "realistic", showClouds = true }: EarthPr
 
           float lightIntensity = max(max(nightColor.r, nightColor.g), nightColor.b);
 
-          // City lights with cool nuclear green tint
-          vec3 cityLights = nightColor.rgb * vec3(0.8, 1.5, 0.9) * 3.0;
-          cityLights += vec3(0.4, 1.0, 0.6) * pow(lightIntensity, 2.0) * 2.0;
+          // City lights with warm amber tint (distinct from green reactor markers)
+          vec3 cityLights = nightColor.rgb * vec3(1.4, 1.1, 0.6) * 2.5;
+          cityLights += vec3(1.0, 0.8, 0.4) * pow(lightIntensity, 2.0) * 1.5;
 
-          vec3 nightBase = vec3(0.01, 0.02, 0.03);
+          vec3 nightBase = vec3(0.01, 0.015, 0.02);
           vec3 nightSide = nightBase + cityLights;
 
           vec3 finalColor = mix(nightSide, dayColor.rgb, dayFactor);
@@ -171,8 +171,8 @@ export function Earth({ lightingMode = "realistic", showClouds = true }: EarthPr
           float rim = 1.0 - max(0.0, dot(vNormal, vec3(0.0, 0.0, 1.0)));
           rim = pow(rim, 3.0);
 
-          // Green rim for nuclear theme
-          finalColor += vec3(0.1, 0.3, 0.15) * rim * 0.3;
+          // Subtle blue rim for atmosphere
+          finalColor += vec3(0.15, 0.2, 0.3) * rim * 0.3;
 
           float luminance = dot(finalColor, vec3(0.299, 0.587, 0.114));
           finalColor = mix(finalColor, vec3(luminance), 0.08);
