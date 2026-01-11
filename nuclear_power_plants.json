@@ -2878,11 +2878,11 @@
     "LastUpdatedAt": "2026-01-07T14:42:06.587614",
     "Source": "WNA/IAEA",
     "IAEAId": 1047,
-    "WikipediaUrl": "https://en.wikipedia.org/wiki/Fast-neutron_reactor",
-    "WikipediaTitle": "Fast-neutron reactor",
-    "WikipediaExtract": "A fast-neutron reactor (FNR) or fast-spectrum reactor or simply a fast reactor is a category of nuclear reactor in which the fission chain reaction is sustained by fast neutrons (carrying energies above 1 MeV, on average), as opposed to slow thermal neutrons used in thermal-neutron reactors. \nSuch a fast reactor needs no neutron moderator, but requires fuel that is comparatively rich in fissile material.",
-    "WikipediaThumbnail": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Superph%C3%A9nix_5.jpg/330px-Superph%C3%A9nix_5.jpg",
-    "WikidataImage": "Modell BN-600.jpg"
+    "WikipediaUrl": "https://en.wikipedia.org/wiki/China_Experimental_Fast_Reactor",
+    "WikipediaTitle": "China Experimental Fast Reactor",
+    "WikipediaExtract": "The China Experimental Fast Reactor (CEFR) is China's first fast nuclear reactor, and is located outside Beijing at the China Institute of Atomic Energy. It aims to provide China with fast-reactor design, construction, and operational experience, and will be a key facility for testing and researching components and materials to be used in subsequent fast reactors. The reactor achieved first criticality on July 21, 2010 and started generating power a year later on July 21, 2011.",
+    "WikipediaThumbnail": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/CEFR_%2804790005%29.jpg/330px-CEFR_%2804790005%29.jpg",
+    "WikidataImage": "CEFR (04790005).jpg"
   },
   {
     "Id": 122,

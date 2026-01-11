@@ -293,8 +293,8 @@ const SceneContent = memo(function SceneContent({
         ref={controlsRef}
         enabled={controlsEnabled}
         enablePan={false}
-        minDistance={3.5}
-        maxDistance={25}
+        minDistance={2.1}
+        maxDistance={24}
         enableDamping
         dampingFactor={0.05}
         rotateSpeed={0.5}
@@ -361,7 +361,7 @@ export const Scene = forwardRef<SceneControls, SceneProps>(function Scene(
     zoomIn: () => {
       if (cameraRef.current) {
         const currentDistance = cameraRef.current.position.length();
-        setTargetZoom(Math.max(3.5, currentDistance - 2));
+        setTargetZoom(Math.max(2.1, currentDistance - 2));
         setTimeout(() => setTargetZoom(null), 500);
       }
     },

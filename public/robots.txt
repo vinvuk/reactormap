@@ -11,7 +11,9 @@ Disallow: /api/
 
 # Block static assets that don't need indexing
 Disallow: /*.json$
-Disallow: /*.xml$
+
+# Allow sitemap
+Allow: /sitemap.xml
 
 # Crawl delay for politeness (optional, not all bots honor this)
 Crawl-delay: 1

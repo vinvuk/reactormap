@@ -7,7 +7,7 @@ import path from "path";
  * Cached reactor data with timestamp
  */
 let cachedData: { reactors: Reactor[]; timestamp: number; dataSourceDate: string } | null = null;
-const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours (static data)
+const CACHE_DURATION = 60 * 60 * 1000; // 1 hour (reduced to pick up data changes faster)
 
 /**
  * Raw data structure from GeoNuclearData JSON (with Wikipedia enrichment)
@@ -174,8 +174,8 @@ export async function GET(): Promise<NextResponse<ReactorApiResponse>> {
         },
         {
           headers: {
-            "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
-            "CDN-Cache-Control": "public, max-age=86400",
+            "Cache-Control": "public, max-age=3600, stale-while-revalidate=7200",
+            "CDN-Cache-Control": "public, max-age=3600",
           },
         }
       );
@@ -210,8 +210,8 @@ export async function GET(): Promise<NextResponse<ReactorApiResponse>> {
       },
       {
         headers: {
-          "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
-          "CDN-Cache-Control": "public, max-age=86400",
+          "Cache-Control": "public, max-age=3600, stale-while-revalidate=7200",
+          "CDN-Cache-Control": "public, max-age=3600",
         },
       }
     );
