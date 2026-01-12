@@ -264,6 +264,41 @@ interface SceneContentProps extends SceneProps {
 }
 
 /**
+ * Dynamic rotation speed controller
+ * Scales rotation speed based on camera distance from Earth surface
+ * Closer = slower, farther = faster
+ */
+function DynamicRotateSpeed({ controlsRef }: { controlsRef: React.RefObject<any> }) {
+  const { camera } = useThree();
+
+  useFrame(() => {
+    if (!controlsRef.current) return;
+
+    // Calculate distance from Earth surface (not center)
+    const distanceFromCenter = camera.position.length();
+    const distanceFromSurface = distanceFromCenter - EARTH_RADIUS;
+
+    // Scale rotation speed based on distance from surface
+    // At max distance (~22 units from surface): rotateSpeed = 0.5
+    // At min distance (~0.1 units from surface): rotateSpeed = 0.05
+    const maxSurfaceDistance = 22;
+    const minSurfaceDistance = 0.1;
+    const maxSpeed = 0.5;
+    const minSpeed = 0.05;
+
+    // Linear interpolation based on surface distance
+    const normalizedDistance = Math.max(0, Math.min(1,
+      (distanceFromSurface - minSurfaceDistance) / (maxSurfaceDistance - minSurfaceDistance)
+    ));
+
+    const rotateSpeed = minSpeed + normalizedDistance * (maxSpeed - minSpeed);
+    controlsRef.current.rotateSpeed = rotateSpeed;
+  });
+
+  return null;
+}
+
+/**
  * Internal scene content - memoized for performance
  */
 const SceneContent = memo(function SceneContent({
@@ -288,6 +323,8 @@ const SceneContent = memo(function SceneContent({
         targetZoom={targetZoom}
         onAnimationDone={onLocationAnimationDone}
       />
+
+      <DynamicRotateSpeed controlsRef={controlsRef} />
 
       <OrbitControls
         ref={controlsRef}
