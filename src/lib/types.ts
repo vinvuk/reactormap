@@ -75,8 +75,8 @@ export const STATUS_CONFIG: Record<ReactorStatus, {
   },
   shutdown: {
     label: "Shutdown",
-    color: "#888888",
-    glowColor: "rgba(136, 136, 136, 0.4)",
+    color: "#aaaaaa",
+    glowColor: "rgba(170, 170, 170, 0.5)",
     description: "Reactor permanently closed",
   },
   cancelled: {
