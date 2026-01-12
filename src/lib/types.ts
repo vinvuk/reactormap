@@ -63,8 +63,8 @@ export const STATUS_CONFIG: Record<ReactorStatus, {
   },
   planned: {
     label: "Planned",
-    color: "#00aaff",
-    glowColor: "rgba(0, 170, 255, 0.5)",
+    color: "#00e5ff",
+    glowColor: "rgba(0, 229, 255, 0.6)",
     description: "Reactor is approved and planned for construction",
   },
   suspended: {
