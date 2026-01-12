@@ -108,7 +108,7 @@ const Lighting = memo(function Lighting() {
       <directionalLight
         position={[-5, -2, -5]}
         intensity={0.4}
-        color="#00aaff"
+        color="#00e5ff"
       />
 
       <pointLight
