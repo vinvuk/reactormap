@@ -279,12 +279,12 @@ function DynamicRotateSpeed({ controlsRef }: { controlsRef: React.RefObject<any>
     const distanceFromSurface = distanceFromCenter - EARTH_RADIUS;
 
     // Scale rotation speed based on distance from surface
-    // At max distance (~22 units from surface): rotateSpeed = 0.5
-    // At min distance (~0.1 units from surface): rotateSpeed = 0.05
+    // At max distance (~22 units from surface): rotateSpeed = 0.4
+    // At min distance (~1.5 units from surface): rotateSpeed = 0.015
     const maxSurfaceDistance = 22;
-    const minSurfaceDistance = 0.1;
-    const maxSpeed = 0.5;
-    const minSpeed = 0.05;
+    const minSurfaceDistance = 1.5;
+    const maxSpeed = 0.4;
+    const minSpeed = 0.015;
 
     // Linear interpolation based on surface distance
     const normalizedDistance = Math.max(0, Math.min(1,
@@ -330,12 +330,12 @@ const SceneContent = memo(function SceneContent({
         ref={controlsRef}
         enabled={controlsEnabled}
         enablePan={false}
-        minDistance={2.1}
+        minDistance={3.5}
         maxDistance={24}
         enableDamping
         dampingFactor={0.05}
-        rotateSpeed={0.5}
-        zoomSpeed={1.0}
+        rotateSpeed={0.4}
+        zoomSpeed={0.8}
       />
 
       <Lighting />
@@ -398,7 +398,7 @@ export const Scene = forwardRef<SceneControls, SceneProps>(function Scene(
     zoomIn: () => {
       if (cameraRef.current) {
         const currentDistance = cameraRef.current.position.length();
-        setTargetZoom(Math.max(2.1, currentDistance - 2));
+        setTargetZoom(Math.max(3.5, currentDistance - 2));
         setTimeout(() => setTargetZoom(null), 500);
       }
     },
