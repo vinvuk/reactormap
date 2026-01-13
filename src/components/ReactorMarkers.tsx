@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useCallback } from "react";
 import { useFrame, useThree, ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import { Reactor, STATUS_CONFIG } from "@/lib/types";
@@ -718,11 +718,9 @@ function CleanMarker({ reactor, isSelected, onClick, onHover, clusterCount = 1 }
   const statusConfig = STATUS_CONFIG[reactor.status];
   const color = useMemo(() => new THREE.Color(statusConfig.color), [statusConfig.color]);
 
-  // Uniform base size - only selected state changes size
-  // Cluster size scales with sqrt of count for visual balance
+  // Uniform dot size - all markers same size for clean visual
   const baseSize = 0.012;
-  const clusterScale = clusterCount > 1 ? Math.sqrt(clusterCount) * 0.7 : 1;
-  const dotSize = isSelected ? baseSize * 1.5 * clusterScale : baseSize * clusterScale;
+  const dotSize = isSelected ? baseSize * 1.5 : baseSize;
 
   useFrame((state) => {
     if (!groupRef.current) return;
@@ -780,7 +778,7 @@ function CleanMarker({ reactor, isSelected, onClick, onHover, clusterCount = 1 }
     <group ref={groupRef} position={position}>
       {/* Click target - larger for clusters */}
       <mesh onClick={handleClick} onPointerOver={handlePointerOver} onPointerOut={handlePointerOut}>
-        <sphereGeometry args={[0.025 * clusterScale, 8, 8]} />
+        <sphereGeometry args={[0.025, 8, 8]} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
 
@@ -807,12 +805,12 @@ function CleanMarker({ reactor, isSelected, onClick, onHover, clusterCount = 1 }
         />
       </sprite>
 
-      {/* Selection ring - white pulsing ring for visibility */}
+      {/* Selection ring - pulsing ring matching status color */}
       {isSelected && (
         <sprite ref={selectionRingRef} scale={[dotSize * 3, dotSize * 3, 1]}>
           <spriteMaterial
             map={getRingTexture()}
-            color="#ffffff"
+            color={color}
             transparent
             opacity={0.8}
             depthWrite={false}
@@ -1026,8 +1024,8 @@ export function ReactorMarkers({
   const locationClusters = useMemo(() => {
     const clusters = new Map<string, Reactor[]>();
     for (const reactor of filteredReactors) {
-      // Round to 3 decimal places for clustering (~100m precision)
-      const key = `${reactor.latitude.toFixed(3)},${reactor.longitude.toFixed(3)}`;
+      // Round to 2 decimal places for clustering (~1km precision)
+      const key = `${reactor.latitude.toFixed(2)},${reactor.longitude.toFixed(2)}`;
       const existing = clusters.get(key) || [];
       existing.push(reactor);
       clusters.set(key, existing);
@@ -1040,7 +1038,7 @@ export function ReactorMarkers({
    */
   const getBestReactorAtLocation = useMemo(() => {
     return (reactor: Reactor): Reactor => {
-      const key = `${reactor.latitude.toFixed(3)},${reactor.longitude.toFixed(3)}`;
+      const key = `${reactor.latitude.toFixed(2)},${reactor.longitude.toFixed(2)}`;
       const cluster = locationClusters.get(key) || [reactor];
 
       // Sort by status priority (highest first), then by capacity (highest first)
@@ -1059,7 +1057,7 @@ export function ReactorMarkers({
    */
   const getClusterHoverInfo = useMemo(() => {
     return (reactor: Reactor): { name: string; status: string; count: number } => {
-      const key = `${reactor.latitude.toFixed(3)},${reactor.longitude.toFixed(3)}`;
+      const key = `${reactor.latitude.toFixed(2)},${reactor.longitude.toFixed(2)}`;
       const cluster = locationClusters.get(key) || [reactor];
       const bestReactor = getBestReactorAtLocation(reactor);
 
@@ -1113,7 +1111,7 @@ export function ReactorMarkers({
     const processedLocations = new Set<string>();
 
     for (const reactor of filteredReactors) {
-      const key = `${reactor.latitude.toFixed(3)},${reactor.longitude.toFixed(3)}`;
+      const key = `${reactor.latitude.toFixed(2)},${reactor.longitude.toFixed(2)}`;
       if (processedLocations.has(key)) continue;
 
       processedLocations.add(key);
@@ -1130,16 +1128,26 @@ export function ReactorMarkers({
     return result;
   }, [filteredReactors, visualStyle, locationClusters, getBestReactorAtLocation]);
 
+  /**
+   * Check if selected reactor is at the same location as a cluster
+   */
+  const isSelectedAtLocation = useCallback((reactor: Reactor): boolean => {
+    if (!selectedReactor) return false;
+    const clusterKey = `${reactor.latitude.toFixed(2)},${reactor.longitude.toFixed(2)}`;
+    const selectedKey = `${selectedReactor.latitude.toFixed(2)},${selectedReactor.longitude.toFixed(2)}`;
+    return clusterKey === selectedKey;
+  }, [selectedReactor]);
+
   return (
     <group>
       {clusteredData.map(({ reactor, clusterCount }) => (
         <MarkerComponent
-          key={`${reactor.latitude.toFixed(3)}-${reactor.longitude.toFixed(3)}`}
+          key={`${reactor.latitude.toFixed(2)}-${reactor.longitude.toFixed(2)}`}
           reactor={reactor}
-          isSelected={selectedReactor?.id === reactor.id}
+          isSelected={isSelectedAtLocation(reactor)}
           clusterCount={clusterCount}
           onClick={() => {
-            if (selectedReactor?.id === reactor.id) {
+            if (isSelectedAtLocation(reactor)) {
               onSelectReactor(null);
             } else {
               // Select the best reactor at this location
