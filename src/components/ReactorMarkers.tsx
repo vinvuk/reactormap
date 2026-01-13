@@ -702,6 +702,7 @@ function CleanMarker({ reactor, isSelected, onClick, onHover, clusterCount = 1 }
   const groupRef = useRef<THREE.Group>(null);
   const dotRef = useRef<THREE.Sprite>(null);
   const glowRef = useRef<THREE.Sprite>(null);
+  const selectionRingRef = useRef<THREE.Sprite>(null);
   const { camera, gl } = useThree();
 
   const DOT_SURFACE_OFFSET = 0.01;
@@ -723,9 +724,10 @@ function CleanMarker({ reactor, isSelected, onClick, onHover, clusterCount = 1 }
   const clusterScale = clusterCount > 1 ? Math.sqrt(clusterCount) * 0.7 : 1;
   const dotSize = isSelected ? baseSize * 1.5 * clusterScale : baseSize * clusterScale;
 
-  useFrame(() => {
+  useFrame((state) => {
     if (!groupRef.current) return;
 
+    const time = state.clock.elapsedTime;
     const cameraDir = camera.position.clone().normalize();
     const dotProduct = surfaceNormal.dot(cameraDir);
     const isVisible = dotProduct > -0.1;
@@ -742,6 +744,15 @@ function CleanMarker({ reactor, isSelected, onClick, onHover, clusterCount = 1 }
 
     if (glowRef.current) {
       (glowRef.current.material as THREE.SpriteMaterial).opacity = 0.4 * edgeFade;
+    }
+
+    // Animate selection ring with pulsing effect
+    if (selectionRingRef.current && isSelected) {
+      const pulse = 1 + Math.sin(time * 4) * 0.15;
+      const ringSize = dotSize * 3 * pulse;
+      selectionRingRef.current.scale.set(ringSize, ringSize, 1);
+      const pulseOpacity = 0.7 + Math.sin(time * 4) * 0.2;
+      (selectionRingRef.current.material as THREE.SpriteMaterial).opacity = pulseOpacity * edgeFade;
     }
   });
 
@@ -796,12 +807,12 @@ function CleanMarker({ reactor, isSelected, onClick, onHover, clusterCount = 1 }
         />
       </sprite>
 
-      {/* Selection ring */}
+      {/* Selection ring - white pulsing ring for visibility */}
       {isSelected && (
-        <sprite scale={[dotSize * 2.5, dotSize * 2.5, 1]}>
+        <sprite ref={selectionRingRef} scale={[dotSize * 3, dotSize * 3, 1]}>
           <spriteMaterial
             map={getRingTexture()}
-            color={color}
+            color="#ffffff"
             transparent
             opacity={0.8}
             depthWrite={false}
