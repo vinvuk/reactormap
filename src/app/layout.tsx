@@ -83,11 +83,11 @@ export const metadata: Metadata = {
   publisher: "ReactorMap",
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/favicon.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon.png", type: "image/png", sizes: "192x192" },
     ],
-    apple: "/apple-touch-icon.png",
-    shortcut: "/favicon.png",
+    apple: "/apple-icon.png",
+    shortcut: "/icon.png",
   },
   openGraph: {
     title: "ReactorMap | Global Nuclear Power Plant Tracker",
