@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo, useCallback } from "react";
+import React, { useRef, useMemo, useCallback } from "react";
 import { useFrame, useThree, ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import { Reactor, STATUS_CONFIG } from "@/lib/types";
@@ -194,6 +194,7 @@ interface PinMarkerProps {
   onClick: () => void;
   onHover: (hovering: boolean, screenPos?: { x: number; y: number }) => void;
   clusterCount?: number;
+  cameraDirRef?: React.MutableRefObject<THREE.Vector3>;
 }
 
 /**
@@ -342,6 +343,7 @@ interface PlumeMarkerProps {
   onClick: () => void;
   onHover: (hovering: boolean, screenPos?: { x: number; y: number }) => void;
   clusterCount?: number;
+  cameraDirRef?: React.MutableRefObject<THREE.Vector3>;
 }
 
 /**
@@ -530,6 +532,7 @@ interface DotMarkerProps {
   onClick: () => void;
   onHover: (hovering: boolean, screenPos?: { x: number; y: number }) => void;
   clusterCount?: number;
+  cameraDirRef?: React.MutableRefObject<THREE.Vector3>;
 }
 
 /**
@@ -693,12 +696,13 @@ interface CleanMarkerProps {
   onClick: () => void;
   onHover: (hovering: boolean, screenPos?: { x: number; y: number }) => void;
   clusterCount?: number;
+  cameraDirRef?: React.MutableRefObject<THREE.Vector3>;
 }
 
 /**
  * UI4: Clean static marker - uniform size, no animation, color-only differentiation
  */
-function CleanMarker({ reactor, isSelected, onClick, onHover, clusterCount = 1 }: CleanMarkerProps) {
+function CleanMarker({ reactor, isSelected, onClick, onHover, clusterCount = 1, cameraDirRef }: CleanMarkerProps) {
   const groupRef = useRef<THREE.Group>(null);
   const dotRef = useRef<THREE.Sprite>(null);
   const glowRef = useRef<THREE.Sprite>(null);
@@ -725,8 +729,10 @@ function CleanMarker({ reactor, isSelected, onClick, onHover, clusterCount = 1 }
   useFrame((state) => {
     if (!groupRef.current) return;
 
-    const time = state.clock.elapsedTime;
-    const cameraDir = camera.position.clone().normalize();
+    // Use shared camera direction from parent (avoids per-marker Vector3 allocation)
+    const cameraDir = cameraDirRef?.current;
+    if (!cameraDir) return;
+
     const dotProduct = surfaceNormal.dot(cameraDir);
     const isVisible = dotProduct > -0.1;
     groupRef.current.visible = isVisible;
@@ -746,6 +752,7 @@ function CleanMarker({ reactor, isSelected, onClick, onHover, clusterCount = 1 }
 
     // Animate selection ring with pulsing effect
     if (selectionRingRef.current && isSelected) {
+      const time = state.clock.elapsedTime;
       const pulse = 1 + Math.sin(time * 4) * 0.15;
       const ringSize = dotSize * 3 * pulse;
       selectionRingRef.current.scale.set(ringSize, ringSize, 1);
@@ -831,6 +838,7 @@ interface DefaultMarkerProps {
   onClick: () => void;
   onHover: (hovering: boolean, screenPos?: { x: number; y: number }) => void;
   clusterCount?: number;
+  cameraDirRef?: React.MutableRefObject<THREE.Vector3>;
 }
 
 /**
@@ -1002,6 +1010,21 @@ const STATUS_PRIORITY: Record<string, number> = {
 };
 
 /**
+ * Computes camera direction once per frame and stores in shared ref.
+ * Eliminates per-marker Vector3 allocations in CleanMarker.
+ * @param cameraDirRef - Mutable ref holding the normalized camera direction
+ */
+function CameraDirUpdater({ cameraDirRef }: { cameraDirRef: React.MutableRefObject<THREE.Vector3> }) {
+  const { camera } = useThree();
+
+  useFrame(() => {
+    cameraDirRef.current.copy(camera.position).normalize();
+  });
+
+  return null;
+}
+
+/**
  * Container component for all reactor markers with style variants
  * @param visualStyle - "default" | "pins" | "plumes" | "dots"
  */
@@ -1013,6 +1036,9 @@ export function ReactorMarkers({
   onHoverReactor,
   visualStyle = "default",
 }: ReactorMarkersProps) {
+  /** Shared camera direction ref - computed once per frame by CameraDirUpdater */
+  const cameraDirRef = useRef(new THREE.Vector3());
+
   const filteredReactors = useMemo(
     () => reactors.filter((r) => visibleStatuses.has(r.status)),
     [reactors, visibleStatuses]
@@ -1140,12 +1166,14 @@ export function ReactorMarkers({
 
   return (
     <group>
+      <CameraDirUpdater cameraDirRef={cameraDirRef} />
       {clusteredData.map(({ reactor, clusterCount }) => (
         <MarkerComponent
           key={`${reactor.latitude.toFixed(2)}-${reactor.longitude.toFixed(2)}`}
           reactor={reactor}
           isSelected={isSelectedAtLocation(reactor)}
           clusterCount={clusterCount}
+          cameraDirRef={cameraDirRef}
           onClick={() => {
             if (isSelectedAtLocation(reactor)) {
               onSelectReactor(null);

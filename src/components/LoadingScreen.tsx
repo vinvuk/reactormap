@@ -133,24 +133,14 @@ export function LoadingScreen({ isLoading }: LoadingScreenProps) {
               </svg>
             </motion.div>
 
-            {/* Title */}
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-              className="font-display text-4xl md:text-5xl font-semibold text-cream mb-2"
-            >
+            {/* Title - no animation to avoid LCP render delay */}
+            <h1 className="font-display text-4xl md:text-5xl font-semibold text-cream mb-2">
               ReactorMap
-            </motion.h1>
+            </h1>
 
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
-              className="text-silver text-sm tracking-widest uppercase mb-8"
-            >
+            <p className="text-silver text-sm tracking-widest uppercase mb-8">
               Global Nuclear Power Tracker
-            </motion.p>
+            </p>
 
             {/* Progress Bar */}
             <motion.div

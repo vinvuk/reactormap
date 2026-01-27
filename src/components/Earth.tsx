@@ -55,8 +55,8 @@ export function Earth({ lightingMode = "realistic", showClouds = true }: EarthPr
 
     // Phase 1: Load critical day/night textures first
     Promise.all([
-      loader.loadAsync("/textures/earth_day_8k.jpg"),
-      loader.loadAsync("/textures/earth_night_8k.jpg"),
+      loader.loadAsync("/textures/earth_day_4k.webp"),
+      loader.loadAsync("/textures/earth_night_4k.webp"),
     ]).then(([dayTex, nightTex]) => {
       configureTexture(dayTex);
       configureTexture(nightTex);
@@ -71,7 +71,7 @@ export function Earth({ lightingMode = "realistic", showClouds = true }: EarthPr
       if (showClouds) {
         // Small delay to prioritize Earth rendering
         requestAnimationFrame(() => {
-          loader.loadAsync("/textures/earth_clouds_8k.jpg").then(cloudsTex => {
+          loader.loadAsync("/textures/earth_clouds_4k.webp").then(cloudsTex => {
             configureTexture(cloudsTex);
             setTextures(prev => ({
               ...prev,
@@ -241,7 +241,7 @@ export function Earth({ lightingMode = "realistic", showClouds = true }: EarthPr
     <group>
       {textures.day && textures.night ? (
         <mesh ref={earthRef} rotation={[0, earthRotationOffset, 0]}>
-          <sphereGeometry args={[2, 128, 128]} />
+          <sphereGeometry args={[2, 64, 64]} />
           <shaderMaterial
             attach="material"
             args={[earthShader]}
@@ -356,15 +356,19 @@ export function Starfield({ count = 3000 }: { count?: number }) {
     return { positions, colors, sizes };
   }, [count]);
 
-  // Subtle twinkling animation
+  // Subtle twinkling animation — throttled for performance
+  const frameCountRef = useRef(0);
   useFrame((state) => {
+    frameCountRef.current++;
+    // Skip every other frame to reduce CPU load
+    if (frameCountRef.current % 2 !== 0) return;
+
     if (pointsRef.current) {
       const geometry = pointsRef.current.geometry;
       const sizeAttr = geometry.getAttribute("size") as THREE.BufferAttribute;
       const time = state.clock.elapsedTime;
 
-      for (let i = 0; i < Math.min(100, count); i++) {
-        // Only animate a subset for performance
+      for (let i = 0; i < Math.min(50, count); i++) {
         const idx = Math.floor(Math.random() * count);
         const baseSize = sizes[idx];
         const twinkle = Math.sin(time * 3 + idx) * 0.2 + 1;

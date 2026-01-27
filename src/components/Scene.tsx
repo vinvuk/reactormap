@@ -38,12 +38,12 @@ function CinematicCamera({ onAnimationComplete }: { onAnimationComplete: () => v
   const progressRef = useRef(0);
   const hasCompletedRef = useRef(false);
 
-  const startDistance = 80;
+  const startDistance = 25;
   const endDistance = 10;
   const endPosition = new THREE.Vector3(6, 2.5, 7);
-  const animationDuration = 5;
+  const animationDuration = 1.5;
 
-  const startDelay = 2.4;
+  const startDelay = 0;
   const delayRef = useRef(startDelay);
 
   useFrame((state, delta) => {
@@ -342,7 +342,7 @@ const SceneContent = memo(function SceneContent({
 
       <color attach="background" args={["#020206"]} />
       <fog attach="fog" args={["#020206", 60, 120]} />
-      <Starfield count={2500} />
+      <Starfield count={1500} />
       <Moon />
 
       <Earth lightingMode={lightingMode} showClouds={showClouds} />
@@ -433,7 +433,7 @@ export const Scene = forwardRef<SceneControls, SceneProps>(function Scene(
         }}
       >
         <Suspense fallback={null}>
-          <PerspectiveCamera makeDefault position={[0, 0, 80]} fov={45} />
+          <PerspectiveCamera makeDefault position={[0, 0, 25]} fov={45} />
           <CinematicCamera onAnimationComplete={handleAnimationComplete} />
 
           <SceneContent
