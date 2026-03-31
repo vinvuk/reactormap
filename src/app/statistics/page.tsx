@@ -3,6 +3,7 @@ import Link from "next/link";
 import { promises as fs } from "fs";
 import path from "path";
 import { slugify } from "@/lib/slugify";
+import { PageHeader, Breadcrumb, Hero, DataSource } from "@/components/ui";
 
 /**
  * Raw reactor data from JSON file
@@ -33,26 +34,29 @@ async function getReactorData(): Promise<RawReactor[]> {
  * Page metadata
  */
 export const metadata: Metadata = {
-  title: "Nuclear Power Statistics 2026 | Global Reactor Data | ReactorMap",
+  title: "Number of Nuclear Reactors Worldwide 2026 — Statistics by Country | ReactorMap",
   description:
-    "Comprehensive nuclear power statistics: 439 operational reactors, 64 under construction, 400 GW capacity across 41 countries. Updated data from IAEA PRIS.",
+    "How many nuclear power plants are there in the world in 2026? See the number of operational nuclear reactors by country, reactors under construction, total capacity in GW, and reactor types. Updated IAEA PRIS data.",
   keywords: [
-    "nuclear power statistics",
-    "nuclear reactor data",
-    "global nuclear capacity",
-    "nuclear energy facts",
-    "world nuclear reactors",
+    "number of nuclear reactors worldwide 2026",
+    "nuclear power plants by country",
+    "operational nuclear reactors",
+    "nuclear reactors under construction",
+    "nuclear power statistics 2026",
+    "IAEA PRIS",
+    "nuclear capacity by country",
+    "number of nuclear power plants in the world",
   ],
   openGraph: {
-    title: "Nuclear Power Statistics 2026",
-    description: "Comprehensive global nuclear power statistics and data.",
+    title: "Number of Nuclear Reactors Worldwide 2026 — Statistics by Country",
+    description: "How many nuclear power plants are there in 2026? Operational reactors by country, capacity, reactor types, and construction pipeline. IAEA PRIS data.",
     type: "website",
     url: "https://reactormap.com/statistics",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Nuclear Power Statistics 2026",
-    description: "Comprehensive global nuclear power statistics and data.",
+    title: "Number of Nuclear Reactors Worldwide 2026 — Statistics by Country",
+    description: "How many nuclear power plants are there in 2026? Operational reactors by country, capacity, reactor types, and construction pipeline. IAEA PRIS data.",
   },
   alternates: {
     canonical: "https://reactormap.com/statistics",
@@ -194,54 +198,21 @@ export default async function StatisticsPage() {
       />
 
       <main className="min-h-screen bg-obsidian text-cream">
-        {/* Header */}
-        <header className="border-b border-white/10 bg-charcoal/50 backdrop-blur-xl">
-          <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-            <Link
-              href="/"
-              className="flex items-center gap-2 text-silver hover:text-cream transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              <span className="font-medium">ReactorMap</span>
-            </Link>
+        <PageHeader maxWidth="lg" />
+        <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Statistics" }]} maxWidth="lg" />
 
-            <Link
-              href="/"
-              className="flex items-center gap-2 px-4 py-2 bg-lava/20 hover:bg-lava/30 text-lava-light rounded-lg transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-              </svg>
-              View on Map
-            </Link>
-          </div>
-        </header>
-
-        {/* Breadcrumb */}
-        <nav className="max-w-6xl mx-auto px-4 py-3 text-sm text-silver">
-          <ol className="flex items-center gap-2">
-            <li>
-              <Link href="/" className="hover:text-cream transition-colors">Home</Link>
-            </li>
-            <li>/</li>
-            <li className="text-cream">Statistics</li>
-          </ol>
-        </nav>
+        <Hero
+          title="Nuclear Power Statistics"
+          subtitle={
+            <>
+              Comprehensive data on <span className="text-[#22ff66] font-mono font-bold">{reactors.length}</span> nuclear reactors worldwide
+            </>
+          }
+          maxWidth="lg"
+        />
 
         {/* Content */}
         <div className="max-w-6xl mx-auto px-4 py-8">
-          {/* Title */}
-          <div className="mb-8">
-            <h1 className="text-4xl md:text-5xl font-display font-semibold mb-4">
-              Nuclear Power Statistics
-            </h1>
-            <p className="text-lg text-silver">
-              Comprehensive data on {reactors.length} nuclear reactors worldwide
-            </p>
-          </div>
-
           {/* Key Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
             <div className="glass-panel rounded-xl p-6 text-center">
@@ -480,10 +451,7 @@ export default async function StatisticsPage() {
             </div>
           </section>
 
-          {/* Data Source */}
-          <p className="mt-12 text-sm text-muted text-center">
-            Data source: IAEA PRIS database • Updated regularly
-          </p>
+          <DataSource />
         </div>
       </main>
     </>

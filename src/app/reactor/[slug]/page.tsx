@@ -4,7 +4,7 @@ import Link from "next/link";
 import { promises as fs } from "fs";
 import path from "path";
 import { Reactor, STATUS_CONFIG } from "@/lib/types";
-import { createReactorSlug, extractIdFromSlug } from "@/lib/slugify";
+import { createReactorSlug, extractIdFromSlug, slugify } from "@/lib/slugify";
 
 /**
  * Raw reactor data from JSON file
@@ -110,24 +110,49 @@ export async function generateMetadata({
 
   const statusLabel = STATUS_CONFIG[reactor.status]?.label || reactor.status;
   const capacityText = reactor.capacity ? `${reactor.capacity} MW` : "";
+  const typeText = reactor.reactorType || "";
+
+  // Build a data-rich title: "Seabrook 1 — 1,244 MW PWR | United States | ReactorMap"
+  const titleParts = [reactor.name];
+  const detailParts = [capacityText, typeText].filter(Boolean);
+  if (detailParts.length > 0) {
+    titleParts.push(`${detailParts.join(" ")}`);
+  }
+  const title = `${titleParts.join(" — ")} | ${reactor.country} | ReactorMap`;
+
+  // Front-load capacity, type, status, and country in description
+  const descParts = [`${reactor.name} is a ${statusLabel.toLowerCase()} nuclear reactor in ${reactor.country}.`];
+  if (capacityText) descParts.push(`Net capacity: ${capacityText}.`);
+  if (typeText) descParts.push(`Reactor type: ${typeText}.`);
+  if (reactor.operationalFrom) {
+    const year = new Date(reactor.operationalFrom).getFullYear();
+    descParts.push(`Operational since ${year}.`);
+  }
+  descParts.push("View location, technical data, and history on ReactorMap.");
+  const autoDescription = descParts.join(" ");
 
   const description = reactor.wikipediaExtract
     ? reactor.wikipediaExtract.slice(0, 155) + "..."
-    : `${reactor.name} is a ${statusLabel.toLowerCase()} nuclear reactor in ${reactor.country}${capacityText ? ` with ${capacityText} capacity` : ""}. View details and location on ReactorMap.`;
+    : autoDescription;
+
+  const ogTitle = `${reactor.name} — ${statusLabel}${capacityText ? ` ${capacityText}` : ""}${typeText ? ` ${typeText}` : ""} | ${reactor.country}`;
 
   return {
-    title: `${reactor.name} Nuclear Reactor | ${reactor.country} | ReactorMap`,
+    title,
     description,
     keywords: [
       reactor.name,
+      `${reactor.name} capacity`,
+      `${reactor.name} reactor type`,
       "nuclear reactor",
       "nuclear power plant",
       reactor.country,
-      reactor.reactorType || "reactor",
+      typeText,
       statusLabel,
+      capacityText,
     ].filter(Boolean),
     openGraph: {
-      title: `${reactor.name} - ${statusLabel} Nuclear Reactor`,
+      title: ogTitle,
       description,
       type: "article",
       url: `https://reactormap.com/reactor/${slug}`,
@@ -137,7 +162,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${reactor.name} - ${statusLabel} Nuclear Reactor`,
+      title: ogTitle,
       description,
     },
     alternates: {
@@ -248,16 +273,22 @@ export default async function ReactorPage({
           {/* Title Section */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
-              <span
-                className="px-3 py-1 rounded-full text-sm font-medium"
+              <Link
+                href={`/status/${reactor.status.replace(/_/g, "-")}`}
+                className="px-3 py-1 rounded-full text-sm font-medium hover:brightness-110 transition-all"
                 style={{
                   backgroundColor: `${statusConfig.color}20`,
                   color: statusConfig.color,
                 }}
               >
                 {statusConfig.label}
-              </span>
-              <span className="text-silver">{reactor.country}</span>
+              </Link>
+              <Link
+                href={`/country/${slugify(reactor.country)}`}
+                className="text-silver hover:text-cream transition-colors"
+              >
+                {reactor.country}
+              </Link>
             </div>
 
             <h1 className="text-4xl md:text-5xl font-display font-semibold mb-4">
@@ -303,7 +334,14 @@ export default async function ReactorPage({
                 {reactor.reactorType && (
                   <div className="flex justify-between">
                     <dt className="text-silver">Reactor Type</dt>
-                    <dd className="font-mono">{reactor.reactorType}</dd>
+                    <dd className="font-mono">
+                      <Link
+                        href={`/type/${slugify(reactor.reactorType)}`}
+                        className="hover:text-lava transition-colors"
+                      >
+                        {reactor.reactorType}
+                      </Link>
+                    </dd>
                   </div>
                 )}
                 {reactor.reactorModel && (
@@ -351,7 +389,15 @@ export default async function ReactorPage({
                 )}
                 <div className="flex justify-between">
                   <dt className="text-silver">Current Status</dt>
-                  <dd style={{ color: statusConfig.color }}>{statusConfig.label}</dd>
+                  <dd>
+                    <Link
+                      href={`/status/${reactor.status.replace(/_/g, "-")}`}
+                      className="hover:brightness-125 transition-all"
+                      style={{ color: statusConfig.color }}
+                    >
+                      {statusConfig.label}
+                    </Link>
+                  </dd>
                 </div>
               </dl>
             </div>
@@ -369,7 +415,14 @@ export default async function ReactorPage({
               <dl className="space-y-3">
                 <div className="flex justify-between">
                   <dt className="text-silver">Country</dt>
-                  <dd>{reactor.country}</dd>
+                  <dd>
+                    <Link
+                      href={`/country/${slugify(reactor.country)}`}
+                      className="hover:text-lava transition-colors"
+                    >
+                      {reactor.country}
+                    </Link>
+                  </dd>
                 </div>
                 {reactor.wikidataRegion && (
                   <div className="flex justify-between">
@@ -402,7 +455,14 @@ export default async function ReactorPage({
                   {reactor.wikidataOperator && (
                     <div className="flex justify-between">
                       <dt className="text-silver">Operator</dt>
-                      <dd>{reactor.wikidataOperator}</dd>
+                      <dd>
+                        <Link
+                          href={`/operator/${slugify(reactor.wikidataOperator)}`}
+                          className="hover:text-lava transition-colors"
+                        >
+                          {reactor.wikidataOperator}
+                        </Link>
+                      </dd>
                     </div>
                   )}
                   {reactor.wikidataOwner && (

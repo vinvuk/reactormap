@@ -1,484 +1,151 @@
-"use client";
-
-import { Suspense, useState, useCallback, useRef, useMemo, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import dynamic from "next/dynamic";
-import { LoadingScreen } from "@/components/LoadingScreen";
-import { SearchBar } from "@/components/SearchBar";
-import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
-import { MinimalHeader } from "@/components/v3/MinimalHeader";
-import { CompactPanel } from "@/components/v3/CompactPanel";
-import { MiniControls } from "@/components/v3/MiniControls";
-import { InfoModal, InfoButton } from "@/components/v3/InfoModal";
-import { StatsPanel } from "@/components/v3/StatsPanel";
-import { SceneErrorBoundary } from "@/components/SceneErrorBoundary";
-import { MobileLayout } from "@/components/mobile/MobileLayout";
-import { useReactors } from "@/hooks/useReactors";
-import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import { useIsMobile } from "@/hooks/useIsMobile";
-import { Reactor, ReactorStatus, LightingMode } from "@/lib/types";
-import type { SceneControls } from "@/components/Scene";
-
-// Dynamic import for Scene to avoid SSR issues with Three.js
-const Scene = dynamic(
-  () => import("@/components/Scene").then((mod) => mod.Scene),
-  { ssr: false }
-);
+import Link from "next/link";
+import { promises as fs } from "fs";
+import path from "path";
+import HomeClient from "@/components/HomeClient";
 
 /**
- * Main page component wrapper with Suspense boundary for useSearchParams
+ * Raw reactor data shape for server-side stats calculation
  */
-export default function Home() {
-  return (
-    <Suspense fallback={<LoadingScreen isLoading={true} />}>
-      <HomeContent />
-    </Suspense>
-  );
+interface RawReactor {
+  Status: string;
+  Country: string;
+  Capacity: number | null;
+  ReactorType: string | null;
 }
 
 /**
- * Inner content component that uses URL search params
- * Manages global state and coordinates all child components
+ * Load reactor data for SEO stats (server-side only)
+ * @returns Array of raw reactor records
  */
-function HomeContent() {
-  const searchParams = useSearchParams();
-  const { reactors, isLoading, dataSourceDate } = useReactors();
-  const [selectedReactor, setSelectedReactor] = useState<Reactor | null>(null);
-  const [sceneLoaded, setSceneLoaded] = useState(false);
-  const [visibleStatuses, setVisibleStatuses] = useState<Set<string>>(
-    new Set<ReactorStatus>(["operational", "under_construction", "planned", "suspended", "shutdown", "cancelled"])
-  );
-  const [hoveredReactor, setHoveredReactor] = useState<{
-    reactor: { name: string; status: string };
-    position: { x: number; y: number };
-  } | null>(null);
+async function getReactorStats() {
+  const filePath = path.join(process.cwd(), "nuclear_power_plants.json");
+  const fileContents = await fs.readFile(filePath, "utf8");
+  const reactors: RawReactor[] = JSON.parse(fileContents);
 
-  // UI state
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isHelpOpen, setIsHelpOpen] = useState(false);
-  const [isInfoOpen, setIsInfoOpen] = useState(false);
-  const [isStatsOpen, setIsStatsOpen] = useState(false);
-  const [infoModalTab, setInfoModalTab] = useState<"about" | "privacy" | "terms" | "credits">("about");
-  const [isLocating, setIsLocating] = useState(false);
-  const [operationalIndex, setOperationalIndex] = useState(0);
-  const [initialUrlHandled, setInitialUrlHandled] = useState(false);
-  const [lightingMode, setLightingMode] = useState<LightingMode>("realistic");
-  const [showClouds, setShowClouds] = useState(true);
-  const [selectedCountries, setSelectedCountries] = useState<Set<string>>(new Set());
+  const operational = reactors.filter((r) => r.Status.toLowerCase() === "operational");
+  const underConstruction = reactors.filter((r) => r.Status.toLowerCase() === "under construction");
+  const planned = reactors.filter((r) => r.Status.toLowerCase() === "planned");
+  const totalCapacity = operational.reduce((sum, r) => sum + (r.Capacity || 0), 0);
+  const countries = new Set(operational.map((r) => r.Country)).size;
 
-  // Scene ref for camera controls
-  const sceneRef = useRef<SceneControls>(null);
+  return {
+    total: reactors.length,
+    operational: operational.length,
+    underConstruction: underConstruction.length,
+    planned: planned.length,
+    totalCapacityGW: Math.round(totalCapacity / 1000),
+    countries,
+  };
+}
 
-  // Mobile detection - force day mode on mobile to avoid city lights confusion
-  const isMobile = useIsMobile();
-  const effectiveLightingMode = isMobile ? "day" : lightingMode;
-
-  /**
-   * Handle initial URL parameter to select reactor on page load
-   */
-  useEffect(() => {
-    if (initialUrlHandled || reactors.length === 0 || !sceneLoaded) return;
-
-    const reactorId = searchParams.get("r");
-    if (reactorId) {
-      const reactor = reactors.find((r) => r.id === reactorId);
-      if (reactor) {
-        setSelectedReactor(reactor);
-        // Small delay to ensure scene is ready
-        setTimeout(() => {
-          sceneRef.current?.rotateToLocation(reactor.latitude, reactor.longitude);
-        }, 100);
-      }
-    }
-    setInitialUrlHandled(true);
-  }, [reactors, sceneLoaded, searchParams, initialUrlHandled]);
-
-  /**
-   * Listen for custom event from cookie consent to open privacy policy
-   */
-  useEffect(() => {
-    const handleOpenPrivacy = () => {
-      setInfoModalTab("privacy");
-      setIsInfoOpen(true);
-    };
-
-    window.addEventListener("open-privacy-policy", handleOpenPrivacy);
-    return () => {
-      window.removeEventListener("open-privacy-policy", handleOpenPrivacy);
-    };
-  }, []);
-
-  /**
-   * Update URL when reactor selection changes
-   */
-  const updateUrl = useCallback((reactor: Reactor | null) => {
-    const params = new URLSearchParams();
-    if (reactor) {
-      params.set("r", reactor.id);
-    }
-    const queryString = params.toString();
-    window.history.replaceState(
-      null,
-      "",
-      queryString ? `?${queryString}` : window.location.pathname
-    );
-  }, []);
-
-  /**
-   * Handle reactor selection with URL update
-   */
-  const handleSelectReactor = useCallback((reactor: Reactor | null) => {
-    setSelectedReactor(reactor);
-    updateUrl(reactor);
-  }, [updateUrl]);
-
-  /**
-   * Filter reactors by selected countries
-   */
-  const filteredReactors = useMemo(() => {
-    if (selectedCountries.size === 0) return reactors;
-    return reactors.filter((r) => selectedCountries.has(r.country));
-  }, [reactors, selectedCountries]);
-
-  /**
-   * Get list of operational reactors for navigation
-   */
-  const operationalReactors = useMemo(
-    () => filteredReactors.filter((r) => r.status === "operational"),
-    [filteredReactors]
-  );
-
-  /**
-   * Handle scene load completion
-   */
-  const handleSceneLoadComplete = useCallback(() => {
-    setSceneLoaded(true);
-  }, []);
-
-  /**
-   * Toggle visibility of a reactor status
-   * @param status - Status to toggle
-   */
-  const handleToggleStatus = useCallback((status: string) => {
-    setVisibleStatuses((prev) => {
-      const next = new Set(prev);
-      if (next.has(status)) {
-        next.delete(status);
-      } else {
-        next.add(status);
-      }
-      return next;
-    });
-  }, []);
-
-  /**
-   * Handle reactor hover for tooltip display
-   * @param reactor - Hovered reactor info
-   * @param screenPos - Screen position for tooltip
-   */
-  const handleHoverReactor = useCallback(
-    (
-      reactor: { name: string; status: string } | null,
-      screenPos: { x: number; y: number } | null
-    ) => {
-      if (reactor && screenPos) {
-        setHoveredReactor({ reactor, position: screenPos });
-      } else {
-        setHoveredReactor(null);
-      }
-    },
-    []
-  );
-
-  /**
-   * Handle reactor selection from search
-   */
-  const handleSearchSelect = useCallback((reactor: Reactor) => {
-    handleSelectReactor(reactor);
-    sceneRef.current?.rotateToLocation(reactor.latitude, reactor.longitude);
-  }, [handleSelectReactor]);
-
-  /**
-   * Handle my location - requires HTTPS in production
-   */
-  const handleMyLocation = useCallback(() => {
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser");
-      return;
-    }
-
-    // Check if we're on HTTPS (required for geolocation in production)
-    if (typeof window !== "undefined" && window.location.protocol === "http:" && window.location.hostname !== "localhost") {
-      alert("Location requires a secure connection (HTTPS)");
-      return;
-    }
-
-    setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        sceneRef.current?.rotateToLocation(
-          position.coords.latitude,
-          position.coords.longitude
-        );
-        setIsLocating(false);
-      },
-      (error) => {
-        console.error("Geolocation error:", error);
-        setIsLocating(false);
-
-        // Provide specific error messages
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            alert("Location permission denied. Please enable location access in your browser settings.");
-            break;
-          case error.POSITION_UNAVAILABLE:
-            alert("Location information unavailable.");
-            break;
-          case error.TIMEOUT:
-            alert("Location request timed out. Please try again.");
-            break;
-          default:
-            alert("Unable to get your location.");
-        }
-      },
-      {
-        timeout: 10000,
-        enableHighAccuracy: true,
-        maximumAge: 60000
-      }
-    );
-  }, []);
-
-  /**
-   * Handle close (panels, search, etc.)
-   */
-  const handleClose = useCallback(() => {
-    if (isSearchOpen) {
-      setIsSearchOpen(false);
-    } else if (isHelpOpen) {
-      setIsHelpOpen(false);
-    } else if (isInfoOpen) {
-      setIsInfoOpen(false);
-    } else if (selectedReactor) {
-      handleSelectReactor(null);
-    }
-  }, [isSearchOpen, isHelpOpen, isInfoOpen, selectedReactor, handleSelectReactor]);
-
-  /**
-   * Navigate to next operational reactor
-   */
-  const handleNextOperational = useCallback(() => {
-    if (operationalReactors.length === 0) return;
-    const nextIndex = (operationalIndex + 1) % operationalReactors.length;
-    setOperationalIndex(nextIndex);
-    const reactor = operationalReactors[nextIndex];
-    handleSelectReactor(reactor);
-    sceneRef.current?.rotateToLocation(reactor.latitude, reactor.longitude);
-  }, [operationalReactors, operationalIndex, handleSelectReactor]);
-
-  /**
-   * Navigate to previous operational reactor
-   */
-  const handlePrevOperational = useCallback(() => {
-    if (operationalReactors.length === 0) return;
-    const prevIndex = (operationalIndex - 1 + operationalReactors.length) % operationalReactors.length;
-    setOperationalIndex(prevIndex);
-    const reactor = operationalReactors[prevIndex];
-    handleSelectReactor(reactor);
-    sceneRef.current?.rotateToLocation(reactor.latitude, reactor.longitude);
-  }, [operationalReactors, operationalIndex, handleSelectReactor]);
-
-  /**
-   * Cycle through lighting modes: realistic -> day -> night -> realistic
-   */
-  const handleCycleLightingMode = useCallback(() => {
-    setLightingMode((prev) => {
-      const modes: LightingMode[] = ["realistic", "day", "night"];
-      const currentIndex = modes.indexOf(prev);
-      return modes[(currentIndex + 1) % modes.length];
-    });
-  }, []);
-
-  /**
-   * Toggle cloud visibility on the globe
-   */
-  const handleToggleClouds = useCallback(() => {
-    setShowClouds((prev) => !prev);
-  }, []);
-
-  /**
-   * Handle country filter toggle (add/remove from selection)
-   * @param country - Country to toggle, or null to clear all
-   */
-  const handleToggleCountry = useCallback((country: string | null) => {
-    if (country === null) {
-      setSelectedCountries(new Set());
-    } else {
-      setSelectedCountries((prev) => {
-        const next = new Set(prev);
-        if (next.has(country)) {
-          next.delete(country);
-        } else {
-          next.add(country);
-        }
-        return next;
-      });
-    }
-  }, []);
-
-  // Keyboard shortcuts
-  useKeyboardShortcuts({
-    onSearch: () => setIsSearchOpen(true),
-    onClose: handleClose,
-    onHelp: () => setIsHelpOpen(true),
-    onMyLocation: handleMyLocation,
-    onZoomIn: () => sceneRef.current?.zoomIn(),
-    onZoomOut: () => sceneRef.current?.zoomOut(),
-    onResetView: () => sceneRef.current?.resetView(),
-    onNextErupting: handleNextOperational,
-    onPrevErupting: handlePrevOperational,
-    isSearchOpen,
-    isHelpOpen,
-  });
-
-  const showLoading = isLoading || !sceneLoaded;
+/**
+ * Homepage — server component wrapping the interactive 3D map client component
+ * Provides crawlable SEO content below the fold for search engines
+ */
+export default async function Home() {
+  const stats = await getReactorStats();
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-obsidian">
-      {/* Loading Screen */}
-      <LoadingScreen isLoading={showLoading} />
+    <>
+      {/* Interactive 3D Map (client-side) */}
+      <HomeClient />
 
-      {/* 3D Scene */}
-      <SceneErrorBoundary>
-        <Scene
-          ref={sceneRef}
-          reactors={filteredReactors}
-          selectedReactor={selectedReactor}
-          onSelectReactor={handleSelectReactor}
-          visibleStatuses={visibleStatuses}
-          onLoadComplete={handleSceneLoadComplete}
-          isLoading={isLoading}
-          onHoverReactor={handleHoverReactor}
-          lightingMode={effectiveLightingMode}
-          showClouds={showClouds}
-        />
-      </SceneErrorBoundary>
+      {/* Server-rendered SEO content — visible below the full-screen map */}
+      <section className="bg-obsidian text-cream px-4 py-16">
+        <div className="max-w-5xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-bold font-[family-name:var(--font-display)] mb-6">
+            Nuclear Power Plant Map
+          </h1>
+          <p className="text-lg text-silver max-w-3xl mb-12 leading-relaxed">
+            Explore {stats.total}+ nuclear reactors worldwide on an interactive 3D globe.
+            ReactorMap tracks {stats.operational} operational reactors across {stats.countries} countries,
+            with {stats.underConstruction} under construction and {stats.planned} planned.
+            Total operational capacity: {stats.totalCapacityGW} GW.
+            Data sourced from the IAEA PRIS database, updated for 2026.
+          </p>
 
-      {/* Mobile Layout - only visible on mobile */}
-      <MobileLayout
-        reactors={reactors}
-        selectedReactor={selectedReactor}
-        onSelectReactor={handleSelectReactor}
-        onMyLocation={handleMyLocation}
-        onResetView={() => sceneRef.current?.resetView()}
-        onZoomIn={() => sceneRef.current?.zoomIn()}
-        onZoomOut={() => sceneRef.current?.zoomOut()}
-        isLocating={isLocating}
-        onSearchSelect={handleSearchSelect}
-      />
+          {/* Quick stats grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
+            <div className="border border-white/10 rounded-xl p-6 text-center">
+              <div className="text-3xl font-mono font-bold text-[#22ff66]">{stats.operational}</div>
+              <div className="text-sm text-silver mt-1">Operational Reactors</div>
+            </div>
+            <div className="border border-white/10 rounded-xl p-6 text-center">
+              <div className="text-3xl font-mono font-bold text-[#ffee00]">{stats.underConstruction}</div>
+              <div className="text-sm text-silver mt-1">Under Construction</div>
+            </div>
+            <div className="border border-white/10 rounded-xl p-6 text-center">
+              <div className="text-3xl font-mono font-bold text-[#00aaff]">{stats.planned}</div>
+              <div className="text-sm text-silver mt-1">Planned</div>
+            </div>
+            <div className="border border-white/10 rounded-xl p-6 text-center">
+              <div className="text-3xl font-mono font-bold text-cream">{stats.countries}</div>
+              <div className="text-sm text-silver mt-1">Countries</div>
+            </div>
+          </div>
 
-      {/* Desktop UI Overlay - hidden on mobile */}
-      <div className="hidden md:block content-layer pointer-events-none">
-        <MinimalHeader
-          reactors={reactors}
-          visibleStatuses={visibleStatuses}
-          onToggleStatus={handleToggleStatus}
-          onSearch={() => setIsSearchOpen(true)}
-          selectedCountries={selectedCountries}
-          onToggleCountry={handleToggleCountry}
-          dataSourceDate={dataSourceDate}
-        />
+          {/* Browse links — keyword-rich internal linking */}
+          <h2 className="text-2xl font-semibold mb-6">Browse Nuclear Reactors</h2>
+          <div className="grid md:grid-cols-3 gap-6 mb-16">
+            <div>
+              <h3 className="text-lg font-medium mb-3">By Region</h3>
+              <ul className="space-y-2 text-silver">
+                <li><Link href="/region/north-america" className="hover:text-cream transition-colors">North America</Link></li>
+                <li><Link href="/region/europe" className="hover:text-cream transition-colors">Europe</Link></li>
+                <li><Link href="/region/asia" className="hover:text-cream transition-colors">Asia</Link></li>
+                <li><Link href="/region/middle-east" className="hover:text-cream transition-colors">Middle East</Link></li>
+                <li><Link href="/region/russia" className="hover:text-cream transition-colors">Russia &amp; CIS</Link></li>
+                <li><Link href="/region/africa" className="hover:text-cream transition-colors">Africa</Link></li>
+                <li><Link href="/region/south-america" className="hover:text-cream transition-colors">South America</Link></li>
+                <li><Link href="/regions" className="text-[#22ff66] hover:underline text-sm">View all regions →</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-medium mb-3">By Status</h3>
+              <ul className="space-y-2 text-silver">
+                <li><Link href="/status/operational" className="hover:text-cream transition-colors">Operational Reactors</Link></li>
+                <li><Link href="/status/under-construction" className="hover:text-cream transition-colors">Under Construction</Link></li>
+                <li><Link href="/status/planned" className="hover:text-cream transition-colors">Planned Reactors</Link></li>
+                <li><Link href="/status/shutdown" className="hover:text-cream transition-colors">Shutdown Reactors</Link></li>
+                <li><Link href="/statuses" className="text-[#22ff66] hover:underline text-sm">View all statuses →</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-medium mb-3">More Data</h3>
+              <ul className="space-y-2 text-silver">
+                <li><Link href="/statistics" className="hover:text-cream transition-colors">Global Nuclear Statistics 2026</Link></li>
+                <li><Link href="/countries" className="hover:text-cream transition-colors">Reactors by Country</Link></li>
+                <li><Link href="/types" className="hover:text-cream transition-colors">Reactor Technologies</Link></li>
+                <li><Link href="/operators" className="hover:text-cream transition-colors">Operators</Link></li>
+                <li><Link href="/decades" className="hover:text-cream transition-colors">Timeline by Decade</Link></li>
+                <li><Link href="/faq" className="hover:text-cream transition-colors">FAQ</Link></li>
+              </ul>
+            </div>
+          </div>
 
-        <CompactPanel
-          reactor={selectedReactor}
-          reactors={filteredReactors}
-          onClose={() => handleSelectReactor(null)}
-          onSelectReactor={handleSelectReactor}
-        />
-
-        <MiniControls
-          onMyLocation={handleMyLocation}
-          onResetView={() => sceneRef.current?.resetView()}
-          onZoomIn={() => sceneRef.current?.zoomIn()}
-          onZoomOut={() => sceneRef.current?.zoomOut()}
-          onHelp={() => setIsHelpOpen(true)}
-          isLocating={isLocating}
-          lightingMode={lightingMode}
-          onCycleLightingMode={handleCycleLightingMode}
-          showClouds={showClouds}
-          onToggleClouds={handleToggleClouds}
-          isPanelOpen={!!selectedReactor}
-        />
-
-        {/* Bottom left buttons - hidden on mobile when panel is open */}
-        <div className={`fixed bottom-5 left-5 z-50 pointer-events-auto transition-opacity flex items-center gap-2 ${
-          selectedReactor ? "opacity-0 md:opacity-100 pointer-events-none md:pointer-events-auto" : ""
-        }`}>
-          <InfoButton onClick={() => setIsInfoOpen(true)} />
-          {/* Stats button */}
-          <button
-            onClick={() => setIsStatsOpen(true)}
-            className="glass-panel p-3 rounded-xl hover:bg-white/10 transition-colors"
-            title="View Statistics"
-          >
-            <svg className="w-5 h-5 text-silver" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Stats Panel */}
-        <StatsPanel
-          reactors={reactors}
-          isOpen={isStatsOpen}
-          onClose={() => setIsStatsOpen(false)}
-        />
-
-        {/* Info Modal */}
-        <InfoModal
-          isOpen={isInfoOpen}
-          onClose={() => {
-            setIsInfoOpen(false);
-            // Reset to default tab when closing
-            setInfoModalTab("about");
-          }}
-          initialTab={infoModalTab}
-        />
-
-        {/* Hover Tooltip */}
-        {hoveredReactor && (
-          <div
-            className="fixed pointer-events-none z-50 glass-solid px-3 py-2 rounded-lg"
-            style={{
-              left: hoveredReactor.position.x + 15,
-              top: hoveredReactor.position.y - 30,
-            }}
-          >
-            <p className="text-sm font-medium text-cream">
-              {hoveredReactor.reactor.name}
+          {/* Descriptive content targeting long-tail search queries */}
+          <div className="prose prose-invert max-w-3xl">
+            <h2 className="text-2xl font-semibold mb-4">About ReactorMap</h2>
+            <p className="text-silver leading-relaxed mb-4">
+              ReactorMap is a free, interactive nuclear power plant map that visualizes every
+              commercial nuclear reactor in the world. The database includes {stats.total}+ reactors
+              across {stats.countries} countries — from the first commercial plant at Calder Hall (1956)
+              to the latest units under construction in China, India, Turkey, and Egypt.
             </p>
-            <p className="text-xs text-silver capitalize">
-              {hoveredReactor.reactor.status.replace(/_/g, " ")}
+            <p className="text-silver leading-relaxed mb-4">
+              Each reactor page shows capacity in MW, reactor type (PWR, BWR, PHWR, LWGR, and more),
+              operational dates, operator, coordinates, and location on the 3D globe.
+              Filter the map by status to see only operational, under construction, planned,
+              or shutdown nuclear power plants.
+            </p>
+            <p className="text-silver leading-relaxed">
+              All data is sourced from the IAEA Power Reactor Information System (PRIS),
+              enriched with Wikipedia and Wikidata. ReactorMap is updated regularly to reflect
+              the latest changes in the global nuclear fleet.
             </p>
           </div>
-        )}
-      </div>
-
-      {/* Desktop Search Modal - hidden on mobile */}
-      <div className="hidden md:block">
-        <SearchBar
-          reactors={reactors}
-          onSelectReactor={handleSearchSelect}
-          isOpen={isSearchOpen}
-          onClose={() => setIsSearchOpen(false)}
-        />
-      </div>
-
-      {/* Keyboard Shortcuts Modal */}
-      <KeyboardShortcutsModal
-        isOpen={isHelpOpen}
-        onClose={() => setIsHelpOpen(false)}
-      />
-    </main>
+        </div>
+      </section>
+    </>
   );
 }

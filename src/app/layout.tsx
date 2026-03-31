@@ -13,7 +13,7 @@ const jsonLd = {
   "@type": "WebApplication",
   name: "ReactorMap",
   description:
-    "Interactive 3D map of 811 nuclear reactors worldwide. Real IAEA data showing operational, planned, and shutdown plants.",
+    "Interactive 3D nuclear power plant map with 811+ reactors worldwide. Explore operational, under construction, planned, and shutdown nuclear reactors by country, region, and type. IAEA PRIS data updated for 2026.",
   url: "https://reactormap.com",
   applicationCategory: "EducationalApplication",
   operatingSystem: "Any",
@@ -24,11 +24,11 @@ const jsonLd = {
     priceCurrency: "USD",
   },
   featureList: [
-    "Nuclear reactor tracking",
-    "Interactive 3D globe visualization",
-    "800+ reactor database",
-    "Operational status monitoring",
-    "Filter by reactor status",
+    "Interactive 3D nuclear reactor map",
+    "811+ reactor database with IAEA PRIS data",
+    "Filter by status: operational, under construction, planned, shutdown",
+    "Browse by country, region, operator, and reactor type",
+    "Detailed reactor pages with capacity, coordinates, and history",
   ],
   screenshot: "https://reactormap.com/opengraph-image",
   author: {
@@ -72,9 +72,9 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ReactorMap | Global Nuclear Power Plant Tracker",
-  description: "Interactive 3D map of 811 nuclear reactors worldwide. Real IAEA data showing operational, planned, and shutdown plants. Explore global nuclear power infrastructure.",
-  keywords: ["nuclear reactor", "nuclear power", "power plant", "energy", "3D visualization", "earth", "globe", "monitor", "IAEA"],
+  title: "Nuclear Power Plant Map — 811+ Reactors Worldwide | ReactorMap",
+  description: "Interactive nuclear reactor map showing 811+ power plants across 41 countries. Browse operational, under construction, and planned reactors with capacity, type, and location data from IAEA PRIS. Updated 2026.",
+  keywords: ["nuclear power plant map", "nuclear reactor map", "world reactor map", "nuclear power plants", "nuclear energy map", "IAEA PRIS", "nuclear reactors by country", "interactive reactor map"],
   verification: {
     google: "fPwCdYoPFuOBz_yQ_kxYIRRYDJOje-iijZRlt_88QaU",
   },
@@ -90,8 +90,8 @@ export const metadata: Metadata = {
     shortcut: "/icon.png",
   },
   openGraph: {
-    title: "ReactorMap | Global Nuclear Power Plant Tracker",
-    description: "Interactive 3D map of 811 nuclear reactors worldwide. Real IAEA data showing operational, planned, and shutdown plants.",
+    title: "Nuclear Power Plant Map — 811+ Reactors Worldwide | ReactorMap",
+    description: "Interactive nuclear reactor map showing 811+ power plants across 41 countries. Browse operational, under construction, and planned reactors with IAEA data.",
     type: "website",
     url: "https://reactormap.com",
     siteName: "ReactorMap",
@@ -99,8 +99,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ReactorMap | Global Nuclear Power Plant Tracker",
-    description: "Interactive 3D map of 811 nuclear reactors worldwide. Real IAEA data showing operational, planned, and shutdown plants.",
+    title: "Nuclear Power Plant Map — 811+ Reactors Worldwide | ReactorMap",
+    description: "Interactive nuclear reactor map showing 811+ power plants across 41 countries. Browse operational, under construction, and planned reactors with IAEA data.",
   },
   metadataBase: new URL("https://reactormap.com"),
   alternates: {

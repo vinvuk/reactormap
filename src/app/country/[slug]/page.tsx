@@ -142,20 +142,26 @@ export async function generateMetadata({
     .filter((r) => r.status === "operational" && r.capacity)
     .reduce((sum, r) => sum + (r.capacity || 0), 0);
 
-  const description = `Explore ${reactors.length} nuclear reactors in ${country}. ${operational} operational reactors with ${totalCapacity.toLocaleString()} MW total capacity. Interactive map and detailed information.`;
+  const capacityGW = (totalCapacity / 1000).toFixed(1);
+  const underConstruction = reactors.filter((r) => r.status === "under_construction").length;
+  const descParts = [`${country} has ${reactors.length} nuclear reactors.`];
+  if (operational > 0) descParts.push(`${operational} operational with ${capacityGW} GW capacity.`);
+  if (underConstruction > 0) descParts.push(`${underConstruction} under construction.`);
+  descParts.push("View each reactor on an interactive map with capacity, type, and status.");
+  const description = descParts.join(" ");
 
   return {
-    title: `Nuclear Reactors in ${country} | ${reactors.length} Plants | ReactorMap`,
+    title: `Nuclear Power Plants in ${country} 2026 — ${operational} Reactors, ${capacityGW} GW | ReactorMap`,
     description,
     keywords: [
-      `nuclear reactors ${country}`,
       `nuclear power plants ${country}`,
-      `${country} nuclear energy`,
-      "nuclear power",
-      "power plants",
+      `nuclear reactors ${country}`,
+      `${country} nuclear energy 2026`,
+      `how many nuclear reactors in ${country}`,
+      `${country} nuclear capacity`,
     ],
     openGraph: {
-      title: `Nuclear Reactors in ${country}`,
+      title: `Nuclear Power Plants in ${country} 2026 — ${operational} Reactors`,
       description,
       type: "website",
       url: `https://reactormap.com/country/${slug}`,

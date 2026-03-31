@@ -175,26 +175,28 @@ export async function generateMetadata({
     .filter((r) => r.status === "operational" && r.capacity)
     .reduce((sum, r) => sum + (r.capacity || 0), 0);
 
-  const description = `Nuclear power in ${region.name}: ${reactors.length} reactors across ${countries.length} countries. ${operational} operational with ${totalCapacity.toLocaleString()} MW capacity.`;
+  const capacityGW = (totalCapacity / 1000).toFixed(1);
+  const description = `Nuclear power plants in ${region.name} (2026): ${reactors.length} reactors across ${countries.length} countries. ${operational} operational reactors with ${capacityGW} GW total capacity. Interactive map and reactor details.`;
 
   return {
-    title: `Nuclear Reactors in ${region.name} | ${reactors.length} Plants | ReactorMap`,
+    title: `Nuclear Power Plants in ${region.name} 2026 — ${operational} Reactors, ${capacityGW} GW | ReactorMap`,
     description,
     keywords: [
-      `nuclear power ${region.name}`,
-      `${region.name} nuclear reactors`,
-      "nuclear energy",
-      "power plants",
+      `nuclear power plants ${region.name}`,
+      `nuclear reactors ${region.name}`,
+      `${region.name} nuclear energy 2026`,
+      `number of nuclear reactors ${region.name}`,
+      "nuclear power map",
     ],
     openGraph: {
-      title: `Nuclear Reactors in ${region.name}`,
+      title: `Nuclear Power Plants in ${region.name} 2026 — ${operational} Reactors`,
       description,
       type: "website",
       url: `https://reactormap.com/region/${slug}`,
     },
     twitter: {
       card: "summary_large_image",
-      title: `Nuclear Reactors in ${region.name}`,
+      title: `Nuclear Power Plants in ${region.name} 2026 — ${operational} Reactors`,
       description,
     },
     alternates: {
