@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { PageHeader, Breadcrumb, Hero, DataSource } from "@/components/ui";
 
 /**
  * Page metadata
@@ -81,55 +82,26 @@ export default function AboutPage() {
       />
 
       <main className="min-h-screen bg-obsidian text-cream">
-        {/* Header */}
-        <header className="border-b border-white/10 bg-charcoal/50 backdrop-blur-xl">
-          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-            <Link
-              href="/"
-              className="flex items-center gap-2 text-silver hover:text-cream transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              <span className="font-medium">ReactorMap</span>
-            </Link>
+        <PageHeader maxWidth="sm" />
+        <Breadcrumb
+          items={[{ label: "Home", href: "/" }, { label: "About" }]}
+          maxWidth="sm"
+        />
 
-            <Link
-              href="/"
-              className="flex items-center gap-2 px-4 py-2 bg-lava/20 hover:bg-lava/30 text-lava-light rounded-lg transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-              </svg>
-              View Map
-            </Link>
-          </div>
-        </header>
-
-        {/* Breadcrumb */}
-        <nav className="max-w-4xl mx-auto px-4 py-3 text-sm text-silver">
-          <ol className="flex items-center gap-2">
-            <li>
-              <Link href="/" className="hover:text-cream transition-colors">Home</Link>
-            </li>
-            <li>/</li>
-            <li className="text-cream">About</li>
-          </ol>
-        </nav>
+        <Hero
+          title="About ReactorMap"
+          subtitle="An interactive 3D visualization of the world's nuclear power plants. Explore 811+ reactors across 41 countries."
+          stats={[
+            { value: "811+", label: "Reactors", highlight: true },
+            { value: 41, label: "Countries" },
+            { value: "70+", label: "Years of History" },
+          ]}
+          maxWidth="sm"
+        />
 
         {/* Content */}
         <div className="max-w-4xl mx-auto px-4 py-8">
           <article className="prose prose-invert prose-lg max-w-none">
-            <h1 className="text-4xl md:text-5xl font-display font-semibold mb-6">
-              About ReactorMap
-            </h1>
-
-            <p className="text-xl text-silver leading-relaxed mb-8">
-              ReactorMap is an interactive 3D visualization of the world&apos;s nuclear power plants.
-              Explore 811+ reactors across 41 countries, from operational facilities generating
-              clean energy to historical plants that shaped the nuclear age.
-            </p>
-
             <section className="mb-12">
               <h2 className="text-2xl font-semibold mb-4 text-cream">Data Sources</h2>
               <div className="glass-panel rounded-xl p-6">
@@ -270,10 +242,7 @@ export default function AboutPage() {
             </section>
           </article>
 
-          {/* Data Source */}
-          <p className="mt-12 text-sm text-muted text-center">
-            Data source: IAEA PRIS database • Updated regularly
-          </p>
+          <DataSource />
         </div>
       </main>
     </>

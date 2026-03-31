@@ -3,6 +3,7 @@ import Link from "next/link";
 import { promises as fs } from "fs";
 import path from "path";
 import { slugify } from "@/lib/slugify";
+import { PageHeader, Breadcrumb, Hero, DataSource } from "@/components/ui";
 
 /**
  * Raw reactor data from JSON file
@@ -160,70 +161,25 @@ export default async function OperatorsPage() {
       />
 
       <main className="min-h-screen bg-obsidian text-cream">
-        {/* Header */}
-        <header className="border-b border-white/10 bg-charcoal/50 backdrop-blur-xl">
-          <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-            <Link
-              href="/"
-              className="flex items-center gap-2 text-silver hover:text-cream transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              <span className="font-medium">ReactorMap</span>
-            </Link>
+        <PageHeader />
+        <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Operators" }]} />
 
-            <Link
-              href="/"
-              className="flex items-center gap-2 px-4 py-2 bg-lava/20 hover:bg-lava/30 text-lava-light rounded-lg transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-              </svg>
-              View on Map
-            </Link>
-          </div>
-        </header>
-
-        {/* Breadcrumb */}
-        <nav className="max-w-6xl mx-auto px-4 py-3 text-sm text-silver">
-          <ol className="flex items-center gap-2">
-            <li>
-              <Link href="/" className="hover:text-cream transition-colors">Home</Link>
-            </li>
-            <li>/</li>
-            <li className="text-cream">Operators</li>
-          </ol>
-        </nav>
+        <Hero
+          title="Nuclear Power Operators"
+          subtitle={
+            <>
+              <span className="text-[#22ff66] font-mono font-bold">{operators.length}</span> utilities and companies worldwide
+            </>
+          }
+          stats={[
+            { value: operators.length, label: "Operators", highlight: true },
+            { value: totalReactors, label: "Reactors" },
+            { value: `${(totalCapacity / 1000).toFixed(0)}`, label: "GW Capacity" },
+          ]}
+        />
 
         {/* Content */}
         <div className="max-w-6xl mx-auto px-4 py-8">
-          {/* Title Section */}
-          <div className="mb-8">
-            <h1 className="text-4xl md:text-5xl font-display font-semibold mb-4">
-              Nuclear Power Operators
-            </h1>
-            <p className="text-lg text-silver">
-              {operators.length} operators • {totalReactors} reactors • {(totalCapacity / 1000).toFixed(0)} GW operational capacity
-            </p>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-            <div className="glass-panel rounded-xl p-4 text-center">
-              <div className="text-3xl font-mono font-bold text-lava">{operators.length}</div>
-              <div className="text-sm text-silver">Operators</div>
-            </div>
-            <div className="glass-panel rounded-xl p-4 text-center">
-              <div className="text-3xl font-mono font-bold text-cream">{totalReactors}</div>
-              <div className="text-sm text-silver">Total Reactors</div>
-            </div>
-            <div className="glass-panel rounded-xl p-4 text-center col-span-2 md:col-span-1">
-              <div className="text-3xl font-mono font-bold text-green-400">{(totalCapacity / 1000).toFixed(0)} GW</div>
-              <div className="text-sm text-silver">Operational Capacity</div>
-            </div>
-          </div>
-
           {/* Operator Table */}
           <div className="glass-panel rounded-xl overflow-hidden mb-8">
             <div className="overflow-x-auto">
@@ -291,10 +247,7 @@ export default async function OperatorsPage() {
             </Link>
           </div>
 
-          {/* Data Source */}
-          <p className="mt-12 text-sm text-muted text-center">
-            Data source: IAEA PRIS database & Wikidata • Updated regularly
-          </p>
+          <DataSource source="IAEA PRIS database & Wikidata" />
         </div>
       </main>
     </>

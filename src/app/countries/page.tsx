@@ -2,8 +2,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { promises as fs } from "fs";
 import path from "path";
-import { STATUS_CONFIG, ReactorStatus } from "@/lib/types";
 import { slugify } from "@/lib/slugify";
+import { PageHeader, Breadcrumb, Hero, DataSource } from "@/components/ui";
 
 /**
  * Raw reactor data from JSON file
@@ -166,56 +166,19 @@ export default async function CountriesPage() {
       />
 
       <main className="min-h-screen bg-obsidian text-cream">
-        {/* Header */}
-        <header className="border-b border-white/10 bg-charcoal/50 backdrop-blur-xl">
-          <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-            <Link
-              href="/"
-              className="flex items-center gap-2 text-silver hover:text-cream transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              <span className="font-medium">ReactorMap</span>
-            </Link>
+        <PageHeader />
+        <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Countries" }]} />
 
-            <Link
-              href="/"
-              className="flex items-center gap-2 px-4 py-2 bg-lava/20 hover:bg-lava/30 text-lava-light rounded-lg transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-              </svg>
-              View on Map
-            </Link>
-          </div>
-        </header>
-
-        {/* Breadcrumb */}
-        <nav className="max-w-6xl mx-auto px-4 py-3 text-sm text-silver">
-          <ol className="flex items-center gap-2">
-            <li>
-              <Link href="/" className="hover:text-cream transition-colors">Home</Link>
-            </li>
-            <li>/</li>
-            <li className="text-cream">Countries</li>
-          </ol>
-        </nav>
-
-        {/* Content */}
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          {/* Title Section */}
-          <div className="mb-8">
-            <h1 className="text-4xl md:text-5xl font-display font-semibold mb-4">
-              Nuclear Power by Country
-            </h1>
-            <p className="text-lg text-silver">
-              {countries.length} countries • {totalReactors} reactors • {totalOperational} operational • {totalCapacity.toLocaleString()} MW
-            </p>
-          </div>
-
+        <Hero
+          title="Nuclear Power by Country"
+          subtitle={
+            <>
+              <span className="text-[#22ff66] font-mono font-bold">{countries.length}</span> countries operating nuclear power plants worldwide
+            </>
+          }
+        >
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
             <div className="glass-panel rounded-xl p-4 text-center">
               <div className="text-3xl font-mono font-bold text-lava">{countries.length}</div>
               <div className="text-sm text-silver">Countries</div>
@@ -233,7 +196,10 @@ export default async function CountriesPage() {
               <div className="text-sm text-silver">Total Capacity</div>
             </div>
           </div>
+        </Hero>
 
+        {/* Content */}
+        <div className="max-w-6xl mx-auto px-4 py-8">
           {/* Country Table */}
           <div className="glass-panel rounded-xl overflow-hidden">
             <div className="overflow-x-auto">
@@ -309,10 +275,7 @@ export default async function CountriesPage() {
             </Link>
           </div>
 
-          {/* Data Source */}
-          <p className="mt-12 text-sm text-muted text-center">
-            Data source: IAEA PRIS database • Updated regularly
-          </p>
+          <DataSource />
         </div>
       </main>
     </>

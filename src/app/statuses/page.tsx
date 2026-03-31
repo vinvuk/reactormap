@@ -3,6 +3,7 @@ import Link from "next/link";
 import { promises as fs } from "fs";
 import path from "path";
 import { STATUS_CONFIG, ReactorStatus } from "@/lib/types";
+import { PageHeader, Breadcrumb, Hero, DataSource } from "@/components/ui";
 
 /**
  * Raw reactor data from JSON file
@@ -111,6 +112,8 @@ export default async function StatusesPage() {
 
   const totalReactors = statuses.reduce((sum, s) => sum + s.count, 0);
   const totalCapacity = statuses.reduce((sum, s) => sum + s.totalCapacity, 0);
+  const operationalCount = statuses.find(s => s.status === 'operational')?.count || 0;
+  const underConstructionCount = statuses.find(s => s.status === 'under_construction')?.count || 0;
 
   // JSON-LD structured data
   const jsonLd = {
@@ -162,54 +165,25 @@ export default async function StatusesPage() {
       />
 
       <main className="min-h-screen bg-obsidian text-cream">
-        {/* Header */}
-        <header className="border-b border-white/10 bg-charcoal/50 backdrop-blur-xl">
-          <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-            <Link
-              href="/"
-              className="flex items-center gap-2 text-silver hover:text-cream transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              <span className="font-medium">ReactorMap</span>
-            </Link>
+        <PageHeader />
+        <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Status Overview" }]} />
 
-            <Link
-              href="/"
-              className="flex items-center gap-2 px-4 py-2 bg-lava/20 hover:bg-lava/30 text-lava-light rounded-lg transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-              </svg>
-              View on Map
-            </Link>
-          </div>
-        </header>
-
-        {/* Breadcrumb */}
-        <nav className="max-w-6xl mx-auto px-4 py-3 text-sm text-silver">
-          <ol className="flex items-center gap-2">
-            <li>
-              <Link href="/" className="hover:text-cream transition-colors">Home</Link>
-            </li>
-            <li>/</li>
-            <li className="text-cream">Status Overview</li>
-          </ol>
-        </nav>
+        <Hero
+          title="Reactor Status Overview"
+          subtitle={
+            <>
+              <span className="text-[#22ff66] font-mono font-bold">{totalReactors}</span> reactors across 6 operational statuses
+            </>
+          }
+          stats={[
+            { value: operationalCount, label: "Operational", highlight: true },
+            { value: underConstructionCount, label: "Under Construction" },
+            { value: `${(totalCapacity / 1000).toFixed(0)}`, label: "GW Capacity" },
+          ]}
+        />
 
         {/* Content */}
         <div className="max-w-6xl mx-auto px-4 py-8">
-          {/* Title Section */}
-          <div className="mb-8">
-            <h1 className="text-4xl md:text-5xl font-display font-semibold mb-4">
-              Reactor Status Overview
-            </h1>
-            <p className="text-lg text-silver">
-              {totalReactors} reactors • {(totalCapacity / 1000).toFixed(0)} GW total capacity
-            </p>
-          </div>
-
           {/* Status Cards */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
             {statuses.map((status) => {
@@ -291,10 +265,7 @@ export default async function StatusesPage() {
             </Link>
           </div>
 
-          {/* Data Source */}
-          <p className="mt-12 text-sm text-muted text-center">
-            Data source: IAEA PRIS database • Updated regularly
-          </p>
+          <DataSource />
         </div>
       </main>
     </>

@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { promises as fs } from "fs";
 import path from "path";
+import { PageHeader, Breadcrumb, Hero, DataSource } from "@/components/ui";
 
 /**
  * Raw reactor data from JSON file
@@ -198,63 +199,24 @@ export default async function DecadesPage() {
       />
 
       <main className="min-h-screen bg-obsidian text-cream">
-        {/* Header */}
-        <header className="border-b border-white/10 bg-charcoal/50 backdrop-blur-xl">
-          <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-            <Link
-              href="/"
-              className="flex items-center gap-2 text-silver hover:text-cream transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              <span className="font-medium">ReactorMap</span>
-            </Link>
+        <PageHeader maxWidth="lg" />
+        <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Timeline" }]} maxWidth="lg" />
 
-            <Link
-              href="/"
-              className="flex items-center gap-2 px-4 py-2 bg-lava/20 hover:bg-lava/30 text-lava-light rounded-lg transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-              </svg>
-              View on Map
-            </Link>
-          </div>
-        </header>
+        <Hero
+          title="Nuclear Power Timeline"
+          subtitle={
+            <>
+              <span className="text-[#22ff66] font-mono font-bold">{totalStarted}</span> reactors started operations across{" "}
+              <span className="text-cream">70+ years</span> of nuclear history
+            </>
+          }
+          maxWidth="lg"
+        />
 
-        {/* Breadcrumb */}
-        <nav className="max-w-6xl mx-auto px-4 py-3 text-sm text-silver">
-          <ol className="flex items-center gap-2">
-            <li>
-              <Link href="/" className="hover:text-cream transition-colors">Home</Link>
-            </li>
-            <li>/</li>
-            <li className="text-cream">Timeline</li>
-          </ol>
-        </nav>
-
-        {/* Hero Section */}
-        <div className="relative overflow-hidden">
-          {/* Background glow */}
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-[#22ff66]/10 rounded-full blur-[100px]" />
-          </div>
-
-          <div className="max-w-6xl mx-auto px-4 py-12 relative">
-            {/* Title */}
-            <div className="text-center mb-12">
-              <h1 className="text-4xl md:text-6xl font-display font-bold mb-4 bg-gradient-to-r from-cream via-white to-cream bg-clip-text text-transparent">
-                Nuclear Power Timeline
-              </h1>
-              <p className="text-xl text-silver">
-                <span className="text-[#22ff66] font-mono font-bold">{totalStarted}</span> reactors started operations across{" "}
-                <span className="text-cream">70+ years</span> of nuclear history
-              </p>
-            </div>
-
-            {/* Main Timeline Visualization */}
-            <div className="glass-panel rounded-2xl p-8 mb-12">
+        {/* Content */}
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          {/* Main Timeline Visualization */}
+          <div className="glass-panel rounded-2xl p-8 mb-12">
               {/* Chart Header */}
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-medium text-silver">Reactors Commissioned by Decade</h2>
@@ -322,12 +284,8 @@ export default async function DecadesPage() {
                   })}
                 </div>
               </div>
-            </div>
           </div>
-        </div>
 
-        {/* Content */}
-        <div className="max-w-6xl mx-auto px-4 pb-12">
           {/* Decade Cards */}
           <h2 className="text-2xl font-semibold mb-6">Explore Each Decade</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
@@ -485,10 +443,7 @@ export default async function DecadesPage() {
             </Link>
           </div>
 
-          {/* Data Source */}
-          <p className="mt-12 text-sm text-muted text-center">
-            Data source: IAEA PRIS database • Updated regularly
-          </p>
+          <DataSource />
         </div>
       </main>
     </>
