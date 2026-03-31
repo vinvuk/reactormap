@@ -55,8 +55,8 @@ export function Earth({ lightingMode = "realistic", showClouds = true }: EarthPr
 
     // Phase 1: Load critical day/night textures first
     Promise.all([
-      loader.loadAsync("/textures/earth_day_4k.webp"),
-      loader.loadAsync("/textures/earth_night_4k.webp"),
+      loader.loadAsync("/textures/earth_day_8k.jpg"),
+      loader.loadAsync("/textures/earth_night_8k.jpg"),
     ]).then(([dayTex, nightTex]) => {
       configureTexture(dayTex);
       configureTexture(nightTex);
@@ -71,7 +71,7 @@ export function Earth({ lightingMode = "realistic", showClouds = true }: EarthPr
       if (showClouds) {
         // Small delay to prioritize Earth rendering
         requestAnimationFrame(() => {
-          loader.loadAsync("/textures/earth_clouds_4k.webp").then(cloudsTex => {
+          loader.loadAsync("/textures/earth_clouds_8k.jpg").then(cloudsTex => {
             configureTexture(cloudsTex);
             setTextures(prev => ({
               ...prev,
